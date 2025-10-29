@@ -1,0 +1,16 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 727ea84aea33aa344bba4cc3ac7968d4, type: 3}
+  m_Name: GameUISettings
+  m_EditorClassIdentifier: 
+  _viewGame: {fileID: -3612272165130136483, guid: 7231899275134d142acd52679f5ca6cc, type: 3}
+  _viewCellRoot: {fileID: 954465264416167201, guid: 0a02545f52ae25d4db30939f24abed87, type: 3}

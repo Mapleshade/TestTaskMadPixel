@@ -1,5 +1,5 @@
 using UniRx;
-using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class MainMenuPresenter : BaseUIPresenter<ViewMainMenu>
 {
@@ -7,7 +7,7 @@ public class MainMenuPresenter : BaseUIPresenter<ViewMainMenu>
 	{
 		base.Initialize();
 		
-		View.NewGameButton.OnClickAsObservable().Subscribe(_ => Debug.Log($"NewGameButton")).AddTo(View.NewGameButton);
+		View.NewGameButton.OnClickAsObservable().Subscribe(_ => SceneManager.LoadScene("Game")).AddTo(View.NewGameButton);
 	}
 
 	public MainMenuPresenter(ViewMainMenu view) : base(view)

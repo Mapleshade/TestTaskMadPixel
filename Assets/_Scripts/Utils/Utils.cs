@@ -4,6 +4,9 @@ using UnityEngine;
 
 public static class Utils
 {
+	public const int PlateSizeX = 8;
+	public const int PlateSizeY = 8;
+
 	public static Transform GetCanvas(this BaseUIView view, List<ViewCanvas> viewCanvases)
 	{
 		var viewCanvas = viewCanvases.Find(f => f.SortingOrder == view.CanvasSortOrder);
