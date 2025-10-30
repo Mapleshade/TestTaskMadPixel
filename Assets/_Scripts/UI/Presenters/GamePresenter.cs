@@ -56,43 +56,8 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 			var rowList = _rowsPresenters[y];
 			for (var x = 1; x < rowList.Count - 3; x++)
 			{
-				var indexFirstSubsequent = x + 1;
-				var indexSecondSubsequent = x + 2;
-				if (rowList[x].CellType == rowList[indexFirstSubsequent].CellType
-					&& rowList[x].CellType == rowList[indexSecondSubsequent].CellType)
-				{
-					var indexThirdSubsequent = x + 3;
-					if (rowList[indexSecondSubsequent].CellType != rowList[indexThirdSubsequent].CellType)
-					{
-						(rowList[indexSecondSubsequent], rowList[indexThirdSubsequent]) = (rowList[indexThirdSubsequent], rowList[indexSecondSubsequent]);
-						(_columnsPresenters[indexSecondSubsequent][y], _columnsPresenters[indexThirdSubsequent][y]) = (_columnsPresenters[indexThirdSubsequent][y], _columnsPresenters[indexSecondSubsequent][y]);
-						SwitchTransformsInHierarchy(rowList[indexSecondSubsequent].ViewTransform, rowList[indexThirdSubsequent].ViewTransform);
-					}
-					else
-					{
-						var newCellType = GetRandomCellType(rowList[indexSecondSubsequent].CellType);
-						Debug.Log($"rows switch type from {rowList[indexSecondSubsequent].CellType} to {newCellType} for {rowList[indexSecondSubsequent].ViewTransform.name}.");
-						rowList[indexSecondSubsequent].SetType(newCellType);
-					}
-				}
-
-				var indexFirstPrevious = x - 1;
-				if (rowList[x].CellType == rowList[indexFirstSubsequent].CellType
-					&& rowList[x].CellType == rowList[indexFirstPrevious].CellType)
-				{
-					if (rowList[indexFirstSubsequent].CellType != rowList[indexSecondSubsequent].CellType)
-					{
-						(rowList[indexFirstSubsequent], rowList[indexSecondSubsequent]) = (rowList[indexSecondSubsequent], rowList[indexFirstSubsequent]);
-						(_columnsPresenters[indexFirstSubsequent][y], _columnsPresenters[indexSecondSubsequent][y]) = (_columnsPresenters[indexSecondSubsequent][y], _columnsPresenters[indexFirstSubsequent][y]);
-						SwitchTransformsInHierarchy(rowList[indexFirstSubsequent].ViewTransform, rowList[indexSecondSubsequent].ViewTransform);
-					}
-					else
-					{
-						var newCellType = GetRandomCellType(rowList[indexFirstSubsequent].CellType);
-						Debug.Log($"rows switch type from {rowList[indexSecondSubsequent].CellType} to {newCellType} for {rowList[indexFirstSubsequent].ViewTransform.name}.");
-						rowList[indexFirstSubsequent].SetType(newCellType);
-					}
-				}
+				CheckTwoNextCells(x, y, rowList, _columnsPresenters);
+				CheckPreviousAndNextCells(x, y, rowList, _columnsPresenters);
 			}
 		}
 
@@ -102,43 +67,60 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 			var columnList = _columnsPresenters[x];
 			for (var y = 1; y < columnList.Count - 3; y++)
 			{
-				var indexFirstSubsequent = y + 1;
-				var indexSecondSubsequent = y + 2;
-				if (columnList[y].CellType == columnList[indexFirstSubsequent].CellType
-					&& columnList[y].CellType == columnList[indexSecondSubsequent].CellType)
-				{
-					var indexThirdSubsequent = y + 3;
-					if (columnList[indexSecondSubsequent].CellType != columnList[indexThirdSubsequent].CellType)
-					{
-						(columnList[indexSecondSubsequent], columnList[indexThirdSubsequent]) = (columnList[indexThirdSubsequent], columnList[indexSecondSubsequent]);
-						(_rowsPresenters[indexSecondSubsequent][x], _rowsPresenters[indexThirdSubsequent][x]) = (_rowsPresenters[indexThirdSubsequent][x], _rowsPresenters[indexSecondSubsequent][x]);
-						SwitchTransformsInHierarchy(columnList[indexSecondSubsequent].ViewTransform, columnList[indexThirdSubsequent].ViewTransform);
-					}
-					else
-					{
-						var newCellType = GetRandomCellType(columnList[indexSecondSubsequent].CellType);
-						Debug.Log($"columns switch type from {columnList[indexSecondSubsequent].CellType} to {newCellType} for {columnList[indexSecondSubsequent].ViewTransform.name}.");
-						columnList[indexSecondSubsequent].SetType(newCellType);
-					}
-				}
+				CheckTwoNextCells(y, x, columnList, _rowsPresenters);
+				CheckPreviousAndNextCells(y, x, columnList, _rowsPresenters);
+			}
+		}
+	}
+
+	private void CheckTwoNextCells(int currentIndex, int additionalIndex, List<CellPresenter> checkList, Dictionary<int, List<CellPresenter>> additionalDictionary)
+	{
+		var indexFirstSubsequent = currentIndex + 1;
+		var indexSecondSubsequent = currentIndex + 2;
+
+		if (checkList[currentIndex].CellType == checkList[indexFirstSubsequent].CellType
+			&& checkList[currentIndex].CellType == checkList[indexSecondSubsequent].CellType)
+		{
+			var indexThirdSubsequent = currentIndex + 3;
+			if (checkList[indexSecondSubsequent].CellType != checkList[indexThirdSubsequent].CellType)
+			{
+				(checkList[indexSecondSubsequent], checkList[indexThirdSubsequent]) = (checkList[indexThirdSubsequent], checkList[indexSecondSubsequent]);
+				(additionalDictionary[indexSecondSubsequent][additionalIndex], additionalDictionary[indexThirdSubsequent][additionalIndex])
+					= (additionalDictionary[indexThirdSubsequent][additionalIndex], additionalDictionary[indexSecondSubsequent][additionalIndex]);
 				
-				var indexFirstPrevious = y - 1;
-				if (columnList[y].CellType == columnList[indexFirstSubsequent].CellType
-					&& columnList[y].CellType == columnList[indexFirstPrevious].CellType)
-				{
-					if (columnList[indexFirstSubsequent].CellType != columnList[indexSecondSubsequent].CellType)
-					{
-						(columnList[indexFirstSubsequent], columnList[indexSecondSubsequent]) = (columnList[indexSecondSubsequent], columnList[indexFirstSubsequent]);
-						(_rowsPresenters[indexFirstSubsequent][x], _rowsPresenters[indexSecondSubsequent][x]) = (_rowsPresenters[indexSecondSubsequent][x], _rowsPresenters[indexFirstSubsequent][x]);
-						SwitchTransformsInHierarchy(columnList[indexFirstSubsequent].ViewTransform, columnList[indexSecondSubsequent].ViewTransform);
-					}
-					else
-					{
-						var newCellType = GetRandomCellType(columnList[indexFirstSubsequent].CellType);
-						Debug.Log($"columns switch type from {columnList[indexSecondSubsequent].CellType} to {newCellType} for {columnList[indexFirstSubsequent].ViewTransform.name}.");
-						columnList[indexFirstSubsequent].SetType(newCellType);
-					}
-				}
+				SwitchTransformsInHierarchy(checkList[indexSecondSubsequent].ViewTransform, checkList[indexThirdSubsequent].ViewTransform);
+			}
+			else
+			{
+				var newCellType = GetRandomCellType(checkList[indexSecondSubsequent].CellType);
+				Debug.Log($"switch type from {checkList[indexSecondSubsequent].CellType} to {newCellType} for {checkList[indexSecondSubsequent].ViewTransform.name}.");
+				checkList[indexSecondSubsequent].SetType(newCellType);
+			}
+		}
+	}
+
+	private void CheckPreviousAndNextCells(int currentIndex, int additionalIndex, List<CellPresenter> checkList, Dictionary<int, List<CellPresenter>> additionalDictionary)
+	{
+		var indexFirstSubsequent = currentIndex + 1;
+		var indexSecondSubsequent = currentIndex + 2;
+		var indexFirstPrevious = currentIndex - 1;
+
+		if (checkList[currentIndex].CellType == checkList[indexFirstSubsequent].CellType
+			&& checkList[currentIndex].CellType == checkList[indexFirstPrevious].CellType)
+		{
+			if (checkList[indexFirstSubsequent].CellType != checkList[indexSecondSubsequent].CellType)
+			{
+				(checkList[indexFirstSubsequent], checkList[indexSecondSubsequent]) = (checkList[indexSecondSubsequent], checkList[indexFirstSubsequent]);
+				(additionalDictionary[indexFirstSubsequent][additionalIndex], additionalDictionary[indexSecondSubsequent][additionalIndex])
+					= (additionalDictionary[indexSecondSubsequent][additionalIndex], additionalDictionary[indexFirstSubsequent][additionalIndex]);
+				
+				SwitchTransformsInHierarchy(checkList[indexFirstSubsequent].ViewTransform, checkList[indexSecondSubsequent].ViewTransform);
+			}
+			else
+			{
+				var newCellType = GetRandomCellType(checkList[indexFirstSubsequent].CellType);
+				Debug.Log($"switch type from {checkList[indexSecondSubsequent].CellType} to {newCellType} for {checkList[indexFirstSubsequent].ViewTransform.name}.");
+				checkList[indexFirstSubsequent].SetType(newCellType);
 			}
 		}
 	}
