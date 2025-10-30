@@ -6,7 +6,7 @@ public class CellPresenter : UiPresenter
 	private readonly ViewCellRootPool _viewCellRootPool;
 	private readonly Tween _selectedAnimation;
 	private readonly Tween _badWayAnimation;
-	// private readonly Tween _disappearAnimation;
+	private readonly Tween _disappearAnimation;
 	private readonly Tween _leftMoveAnimation;
 	private readonly Tween _rightMoveAnimation;
 	private readonly Tween _upMoveAnimation;
@@ -37,6 +37,14 @@ public class CellPresenter : UiPresenter
 
 		_badWayAnimation = DOTween.Sequence()
 			.Append(View.PanelFruitsRoot.DOShakePosition(1.5f, 2))
+			.SetId(this)
+			.SetAutoKill(false)
+			.Pause();
+
+		_disappearAnimation = DOTween.Sequence()
+			.Append(View.CanvasGroupFruitsRoot.DOFade(0, 1f))
+			.AppendInterval(0.5f)
+			// .AppendCallback(AfterDisappear)
 			.SetId(this)
 			.SetAutoKill(false)
 			.Pause();

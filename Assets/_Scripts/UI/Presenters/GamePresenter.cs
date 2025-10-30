@@ -373,6 +373,8 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 		else if (CheckRightCellsAvailableToMerge(_selectedPresenter.IndexX, _rowsPresenters[_selectedPresenter.IndexY]))
 		{
 			_selectedPresenter.ActivateRightAnimation();
+			var presenter = _rowsPresenters[_selectedPresenter.IndexY][_selectedPresenter.IndexX + 1];
+			presenter.ActivateLeftAnimation();
 		}
 		else
 		{
@@ -389,6 +391,8 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 		else if (CheckLeftCellsAvailableToMerge(_selectedPresenter.IndexX, _rowsPresenters[_selectedPresenter.IndexY]))
 		{
 			_selectedPresenter.ActivateLeftAnimation();
+			var presenter = _rowsPresenters[_selectedPresenter.IndexY][_selectedPresenter.IndexX - 1];
+			presenter.ActivateRightAnimation();
 		}
 		else
 		{
@@ -405,6 +409,8 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 		else if (CheckLeftCellsAvailableToMerge(_selectedPresenter.IndexY, _columnsPresenters[_selectedPresenter.IndexX]))
 		{
 			_selectedPresenter.ActivateUpAnimation();
+			var presenter = _columnsPresenters[_selectedPresenter.IndexX][_selectedPresenter.IndexY - 1];
+			presenter.ActivateDownAnimation();
 		}
 		else
 		{
@@ -421,6 +427,8 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 		else if (CheckRightCellsAvailableToMerge(_selectedPresenter.IndexY, _columnsPresenters[_selectedPresenter.IndexX]))
 		{
 			_selectedPresenter.ActivateDownAnimation();
+			var presenter = _columnsPresenters[_selectedPresenter.IndexX][_selectedPresenter.IndexY + 1];
+			presenter.ActivateUpAnimation();
 		}
 		else
 		{
