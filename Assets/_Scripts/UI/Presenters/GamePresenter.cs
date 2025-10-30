@@ -34,7 +34,7 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 				_allPresenters.Add(cellPresenter);
 				_rowsPresenters[x].Add(cellPresenter);
 				_columnsPresenters[y].Add(cellPresenter);
-				
+
 				var randomCellTypeIndex = Random.Range(0, _cellTypesCount);
 				var randomCellType = (CellTypeEnum) randomCellTypeIndex;
 				cellPresenter.InitCell(isOdd, randomCellType, View.PanelPlate);
@@ -73,56 +73,62 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 		}
 	}
 
-	private void CheckTwoNextCells(int currentIndex, int additionalIndex, List<CellPresenter> checkList, Dictionary<int, List<CellPresenter>> additionalDictionary)
+	private void CheckTwoNextCells(int currentIndex, int additionalIndex, List<CellPresenter> checkList,
+		Dictionary<int, List<CellPresenter>> additionalDictionary)
 	{
 		var indexFirstSubsequent = currentIndex + 1;
 		var indexSecondSubsequent = currentIndex + 2;
 
-		if (checkList[currentIndex].CellType == checkList[indexFirstSubsequent].CellType
-			&& checkList[currentIndex].CellType == checkList[indexSecondSubsequent].CellType)
+		if (checkList[currentIndex].CellType != checkList[indexFirstSubsequent].CellType
+			|| checkList[currentIndex].CellType != checkList[indexSecondSubsequent].CellType)
+			return;
+
+		var indexThirdSubsequent = currentIndex + 3;
+		if (checkList[indexSecondSubsequent].CellType != checkList[indexThirdSubsequent].CellType)
 		{
-			var indexThirdSubsequent = currentIndex + 3;
-			if (checkList[indexSecondSubsequent].CellType != checkList[indexThirdSubsequent].CellType)
-			{
-				(checkList[indexSecondSubsequent], checkList[indexThirdSubsequent]) = (checkList[indexThirdSubsequent], checkList[indexSecondSubsequent]);
-				(additionalDictionary[indexSecondSubsequent][additionalIndex], additionalDictionary[indexThirdSubsequent][additionalIndex])
-					= (additionalDictionary[indexThirdSubsequent][additionalIndex], additionalDictionary[indexSecondSubsequent][additionalIndex]);
-				
-				SwitchTransformsInHierarchy(checkList[indexSecondSubsequent].ViewTransform, checkList[indexThirdSubsequent].ViewTransform);
-			}
-			else
-			{
-				var newCellType = GetRandomCellType(checkList[indexSecondSubsequent].CellType);
-				Debug.Log($"switch type from {checkList[indexSecondSubsequent].CellType} to {newCellType} for {checkList[indexSecondSubsequent].ViewTransform.name}.");
-				checkList[indexSecondSubsequent].SetType(newCellType);
-			}
+			(checkList[indexSecondSubsequent], checkList[indexThirdSubsequent])
+				= (checkList[indexThirdSubsequent], checkList[indexSecondSubsequent]);
+
+			(additionalDictionary[indexSecondSubsequent][additionalIndex], additionalDictionary[indexThirdSubsequent][additionalIndex])
+				= (additionalDictionary[indexThirdSubsequent][additionalIndex], additionalDictionary[indexSecondSubsequent][additionalIndex]);
+
+			SwitchTransformsInHierarchy(checkList[indexSecondSubsequent].ViewTransform,
+				checkList[indexThirdSubsequent].ViewTransform);
+			return;
 		}
+
+		var newCellType = GetRandomCellType(checkList[indexSecondSubsequent].CellType);
+		Debug.Log($"switch type from {checkList[indexSecondSubsequent].CellType} to {newCellType} for {checkList[indexSecondSubsequent].ViewTransform.name}.");
+		checkList[indexSecondSubsequent].SetType(newCellType);
 	}
 
-	private void CheckPreviousAndNextCells(int currentIndex, int additionalIndex, List<CellPresenter> checkList, Dictionary<int, List<CellPresenter>> additionalDictionary)
+	private void CheckPreviousAndNextCells(int currentIndex, int additionalIndex, List<CellPresenter> checkList,
+		Dictionary<int, List<CellPresenter>> additionalDictionary)
 	{
 		var indexFirstSubsequent = currentIndex + 1;
 		var indexSecondSubsequent = currentIndex + 2;
 		var indexFirstPrevious = currentIndex - 1;
 
-		if (checkList[currentIndex].CellType == checkList[indexFirstSubsequent].CellType
-			&& checkList[currentIndex].CellType == checkList[indexFirstPrevious].CellType)
+		if (checkList[currentIndex].CellType != checkList[indexFirstSubsequent].CellType
+			|| checkList[currentIndex].CellType != checkList[indexFirstPrevious].CellType)
+			return;
+
+		if (checkList[indexFirstSubsequent].CellType != checkList[indexSecondSubsequent].CellType)
 		{
-			if (checkList[indexFirstSubsequent].CellType != checkList[indexSecondSubsequent].CellType)
-			{
-				(checkList[indexFirstSubsequent], checkList[indexSecondSubsequent]) = (checkList[indexSecondSubsequent], checkList[indexFirstSubsequent]);
-				(additionalDictionary[indexFirstSubsequent][additionalIndex], additionalDictionary[indexSecondSubsequent][additionalIndex])
-					= (additionalDictionary[indexSecondSubsequent][additionalIndex], additionalDictionary[indexFirstSubsequent][additionalIndex]);
-				
-				SwitchTransformsInHierarchy(checkList[indexFirstSubsequent].ViewTransform, checkList[indexSecondSubsequent].ViewTransform);
-			}
-			else
-			{
-				var newCellType = GetRandomCellType(checkList[indexFirstSubsequent].CellType);
-				Debug.Log($"switch type from {checkList[indexSecondSubsequent].CellType} to {newCellType} for {checkList[indexFirstSubsequent].ViewTransform.name}.");
-				checkList[indexFirstSubsequent].SetType(newCellType);
-			}
+			(checkList[indexFirstSubsequent], checkList[indexSecondSubsequent])
+				= (checkList[indexSecondSubsequent], checkList[indexFirstSubsequent]);
+
+			(additionalDictionary[indexFirstSubsequent][additionalIndex], additionalDictionary[indexSecondSubsequent][additionalIndex])
+				= (additionalDictionary[indexSecondSubsequent][additionalIndex], additionalDictionary[indexFirstSubsequent][additionalIndex]);
+
+			SwitchTransformsInHierarchy(checkList[indexFirstSubsequent].ViewTransform,
+				checkList[indexSecondSubsequent].ViewTransform);
+			return;
 		}
+
+		var newCellType = GetRandomCellType(checkList[indexFirstSubsequent].CellType);
+		Debug.Log($"switch type from {checkList[indexSecondSubsequent].CellType} to {newCellType} for {checkList[indexFirstSubsequent].ViewTransform.name}.");
+		checkList[indexFirstSubsequent].SetType(newCellType);
 	}
 
 	private void SwitchTransformsInHierarchy(Transform firstTransform, Transform secondTransform)
@@ -132,13 +138,12 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 
 		firstTransform.SetSiblingIndex(secondIndex);
 		secondTransform.SetSiblingIndex(firstIndex);
-		
+
 		Debug.Log($"Swapped hierarchy positions of {firstTransform.name} and {secondTransform.name}.");
 	}
 
 	private CellTypeEnum GetRandomCellType(CellTypeEnum exclusionType)
 	{
-		
 		var randomCellType = exclusionType;
 		while (randomCellType == exclusionType)
 		{
@@ -148,7 +153,7 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 
 		return randomCellType;
 	}
-	
+
 	public override void Dispose()
 	{
 		base.Dispose();
