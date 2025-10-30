@@ -54,22 +54,43 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 		for (var y = 0; y < Utils.PlateSizeY; y++)
 		{
 			var rowList = _rowsPresenters[y];
-			for (var x = 0; x < rowList.Count - 3; x++)
+			for (var x = 1; x < rowList.Count - 3; x++)
 			{
-				if (rowList[x].CellType == rowList[x + 1].CellType
-					&& rowList[x].CellType == rowList[x + 2].CellType)
+				var indexFirstSubsequent = x + 1;
+				var indexSecondSubsequent = x + 2;
+				if (rowList[x].CellType == rowList[indexFirstSubsequent].CellType
+					&& rowList[x].CellType == rowList[indexSecondSubsequent].CellType)
 				{
-					if (rowList[x + 2].CellType != rowList[x + 3].CellType)
+					var indexThirdSubsequent = x + 3;
+					if (rowList[indexSecondSubsequent].CellType != rowList[indexThirdSubsequent].CellType)
 					{
-						(rowList[x + 2], rowList[x + 3]) = (rowList[x + 3], rowList[x + 2]);
-						(_columnsPresenters[x + 2][y], _columnsPresenters[x + 3][y]) = (_columnsPresenters[x + 3][y], _columnsPresenters[x + 2][y]);
-						SwitchTransformsInHierarchy(rowList[x + 2].ViewTransform, rowList[x + 3].ViewTransform);
+						(rowList[indexSecondSubsequent], rowList[indexThirdSubsequent]) = (rowList[indexThirdSubsequent], rowList[indexSecondSubsequent]);
+						(_columnsPresenters[indexSecondSubsequent][y], _columnsPresenters[indexThirdSubsequent][y]) = (_columnsPresenters[indexThirdSubsequent][y], _columnsPresenters[indexSecondSubsequent][y]);
+						SwitchTransformsInHierarchy(rowList[indexSecondSubsequent].ViewTransform, rowList[indexThirdSubsequent].ViewTransform);
 					}
 					else
 					{
-						var newCellType = GetRandomCellType(rowList[x + 2].CellType);
-						Debug.Log($"switch type from {rowList[x + 2].CellType} to {newCellType} for {rowList[x + 2].ViewTransform.name}.");
-						rowList[x + 2].SetType(newCellType);
+						var newCellType = GetRandomCellType(rowList[indexSecondSubsequent].CellType);
+						Debug.Log($"switch type from {rowList[indexSecondSubsequent].CellType} to {newCellType} for {rowList[indexSecondSubsequent].ViewTransform.name}.");
+						rowList[indexSecondSubsequent].SetType(newCellType);
+					}
+				}
+
+				var indexFirstPrevious = x - 1;
+				if (rowList[x].CellType == rowList[indexFirstSubsequent].CellType
+					&& rowList[x].CellType == rowList[indexFirstPrevious].CellType)
+				{
+					if (rowList[indexFirstSubsequent].CellType != rowList[indexSecondSubsequent].CellType)
+					{
+						(rowList[indexFirstSubsequent], rowList[indexSecondSubsequent]) = (rowList[indexSecondSubsequent], rowList[indexFirstSubsequent]);
+						(_columnsPresenters[indexFirstSubsequent][y], _columnsPresenters[indexSecondSubsequent][y]) = (_columnsPresenters[indexSecondSubsequent][y], _columnsPresenters[indexFirstSubsequent][y]);
+						SwitchTransformsInHierarchy(rowList[indexFirstSubsequent].ViewTransform, rowList[indexSecondSubsequent].ViewTransform);
+					}
+					else
+					{
+						var newCellType = GetRandomCellType(rowList[indexFirstSubsequent].CellType);
+						Debug.Log($"switch type from {rowList[indexSecondSubsequent].CellType} to {newCellType} for {rowList[indexFirstSubsequent].ViewTransform.name}.");
+						rowList[indexFirstSubsequent].SetType(newCellType);
 					}
 				}
 			}
@@ -101,15 +122,15 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 		}
 	}
 
-	private void SwitchTransformsInHierarchy(Transform t1, Transform t2)
+	private void SwitchTransformsInHierarchy(Transform firstTransform, Transform secondTransform)
 	{
-		var index1 = t1.GetSiblingIndex();
-		var index2 = t2.GetSiblingIndex();
+		var firstIndex = firstTransform.GetSiblingIndex();
+		var secondIndex = secondTransform.GetSiblingIndex();
 
-		t1.SetSiblingIndex(index2);
-		t2.SetSiblingIndex(index1);
+		firstTransform.SetSiblingIndex(secondIndex);
+		secondTransform.SetSiblingIndex(firstIndex);
 		
-		Debug.Log($"Swapped hierarchy positions of {t1.name} and {t2.name}.");
+		Debug.Log($"Swapped hierarchy positions of {firstTransform.name} and {secondTransform.name}.");
 	}
 
 	private CellTypeEnum GetRandomCellType(CellTypeEnum exclusionType)
