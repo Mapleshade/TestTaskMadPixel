@@ -26,5 +26,6 @@ public class GameInstaller : MonoInstaller<GameInstaller>
             .UnderTransformGroup("ViewCellRootPool");
         
         Container.BindFactory<CellPresenter, CellPresenterFactory>();
+        Container.Bind(typeof(ITickable)).To<PlayerInputProvider>().AsSingle().NonLazy();
     }
 }
