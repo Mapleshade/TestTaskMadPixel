@@ -3,7 +3,9 @@ using UnityEngine;
 public class CellPresenter : UiPresenter
 {
 	private readonly ViewCellRootPool _viewCellRootPool;
-	public ViewCellRoot View { get; }
+	private ViewCellRoot View { get; }
+	public CellTypeEnum CellType { get; private set; }
+	public Transform ViewTransform => View.transform;
 
 	public CellPresenter(ViewCellRootPool pool)
 	{
@@ -13,6 +15,8 @@ public class CellPresenter : UiPresenter
 
 	public void SetType(CellTypeEnum cellType)
 	{
+		CellType = cellType;
+
 		foreach (var cellTypeData in View.ImagesCellType)
 			cellTypeData.PanelImage.CheckSetActive(cellTypeData.CellType == cellType);
 	}
@@ -24,6 +28,11 @@ public class CellPresenter : UiPresenter
 		View.ImagesCellBackground[0].PanelBackground.CheckSetActive(isLight);
 		View.ImagesCellBackground[1].PanelBackground.CheckSetActive(!isLight);
 		SetType(cellType);
+	}
+
+	public void SetViewName(int xIndex, int yIndex)
+	{
+		View.name = $"Cell_{xIndex}_{yIndex}";
 	}
 
 	public override void Dispose()
