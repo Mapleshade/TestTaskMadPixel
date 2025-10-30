@@ -26,19 +26,19 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 		base.Initialize();
 
 		var isOdd = false;
-		for (var i = 0; i < Utils.PlateSizeX; i++)
+		for (var x = 0; x < Utils.PlateSizeX; x++)
 		{
-			for (var j = 0; j < Utils.PlateSizeY; j++)
+			for (var y = 0; y < Utils.PlateSizeY; y++)
 			{
 				var cellPresenter = _cellPresenterFactory.Create();
 				_allPresenters.Add(cellPresenter);
-				_rowsPresenters[i].Add(cellPresenter);
-				_columnsPresenters[j].Add(cellPresenter);
+				_rowsPresenters[x].Add(cellPresenter);
+				_columnsPresenters[y].Add(cellPresenter);
 				
 				var randomCellTypeIndex = Random.Range(0, _cellTypesCount);
 				var randomCellType = (CellTypeEnum) randomCellTypeIndex;
 				cellPresenter.InitCell(isOdd, randomCellType, View.PanelPlate);
-				cellPresenter.SetViewName(i, j);
+				cellPresenter.SetViewName(x, y);
 				isOdd = !isOdd;
 			}
 
@@ -51,48 +51,50 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 	private void CheckStartPlate()
 	{
 		//check rows
-		for (var i = 0; i < Utils.PlateSizeY; i++)
+		for (var y = 0; y < Utils.PlateSizeY; y++)
 		{
-			var rowList = _rowsPresenters[i];
-			for (var j = 0; j < rowList.Count - 3; j++)
+			var rowList = _rowsPresenters[y];
+			for (var x = 0; x < rowList.Count - 3; x++)
 			{
-				if (rowList[j].CellType == rowList[j + 1].CellType
-					&& rowList[j].CellType == rowList[j + 2].CellType)
+				if (rowList[x].CellType == rowList[x + 1].CellType
+					&& rowList[x].CellType == rowList[x + 2].CellType)
 				{
-					if (rowList[j + 2].CellType != rowList[j + 3].CellType)
+					if (rowList[x + 2].CellType != rowList[x + 3].CellType)
 					{
-						(rowList[j + 2], rowList[j + 3]) = (rowList[j + 3], rowList[j + 2]);
-						(_columnsPresenters[j + 2][i], _columnsPresenters[j + 3][i]) = (_columnsPresenters[j + 3][i], _columnsPresenters[j + 2][i]);
-						SwitchTransformsInHierarchy(rowList[j + 2].ViewTransform, rowList[j + 3].ViewTransform);
+						(rowList[x + 2], rowList[x + 3]) = (rowList[x + 3], rowList[x + 2]);
+						(_columnsPresenters[x + 2][y], _columnsPresenters[x + 3][y]) = (_columnsPresenters[x + 3][y], _columnsPresenters[x + 2][y]);
+						SwitchTransformsInHierarchy(rowList[x + 2].ViewTransform, rowList[x + 3].ViewTransform);
 					}
 					else
 					{
-						var newCellType = GetRandomCellType(rowList[j + 2].CellType);
-						rowList[j + 2].SetType(newCellType);
+						var newCellType = GetRandomCellType(rowList[x + 2].CellType);
+						Debug.Log($"switch type from {rowList[x + 2].CellType} to {newCellType} for {rowList[x + 2].ViewTransform.name}.");
+						rowList[x + 2].SetType(newCellType);
 					}
 				}
 			}
 		}
 
 		//checkColumns
-		for (var i = 0; i < Utils.PlateSizeX; i++)
+		for (var x = 0; x < Utils.PlateSizeX; x++)
 		{
-			var columnList = _columnsPresenters[i];
-			for (var j = 0; j < columnList.Count - 3; j++)
+			var columnList = _columnsPresenters[x];
+			for (var y = 0; y < columnList.Count - 3; y++)
 			{
-				if (columnList[j].CellType == columnList[j + 1].CellType
-					&& columnList[j].CellType == columnList[j + 2].CellType)
+				if (columnList[y].CellType == columnList[y + 1].CellType
+					&& columnList[y].CellType == columnList[y + 2].CellType)
 				{
-					if (columnList[j + 2].CellType != columnList[j + 3].CellType)
+					if (columnList[y + 2].CellType != columnList[y + 3].CellType)
 					{
-						(columnList[j + 2], columnList[j + 3]) = (columnList[j + 3], columnList[j + 2]);
-						(_rowsPresenters[j + 2][i], _rowsPresenters[j + 3][i]) = (_rowsPresenters[j + 3][i], _rowsPresenters[j + 2][i]);
-						SwitchTransformsInHierarchy(columnList[j + 2].ViewTransform, columnList[j + 3].ViewTransform);
+						(columnList[y + 2], columnList[y + 3]) = (columnList[y + 3], columnList[y + 2]);
+						(_rowsPresenters[y + 2][x], _rowsPresenters[y + 3][x]) = (_rowsPresenters[y + 3][x], _rowsPresenters[y + 2][x]);
+						SwitchTransformsInHierarchy(columnList[y + 2].ViewTransform, columnList[y + 3].ViewTransform);
 					}
 					else
 					{
-						var newCellType = GetRandomCellType(columnList[j + 2].CellType);
-						columnList[j + 2].SetType(newCellType);
+						var newCellType = GetRandomCellType(columnList[y + 2].CellType);
+						Debug.Log($"switch type from {columnList[y + 2].CellType} to {newCellType} for {columnList[y + 2].ViewTransform.name}.");
+						columnList[y + 2].SetType(newCellType);
 					}
 				}
 			}
