@@ -319,7 +319,7 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 			//up side
 			else
 			{
-				_selectedPresenter.ActivateUpAnimation();
+				CheckUpSideCells();
 			}
 		} else if (dotProductRight < 0 && dotProductUp < 0)
 		{
@@ -331,7 +331,7 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 			//down side
 			else
 			{
-				_selectedPresenter.ActivateDownAnimation();
+				CheckDownSideCells();
 			}
 		} else if (dotProductRight < 0 && dotProductUp > 0)
 		{
@@ -343,7 +343,7 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 			//up side
 			else
 			{
-				_selectedPresenter.ActivateUpAnimation();
+				CheckUpSideCells();
 			}
 		} else if (dotProductRight > 0 && dotProductUp < 0)
 		{
@@ -355,7 +355,7 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 			//down side
 			else
 			{
-				_selectedPresenter.ActivateDownAnimation();
+				CheckDownSideCells();
 			}
 		}
 		//staying on one place
@@ -393,6 +393,38 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 		else
 		{
 			_selectedPresenter.ActivateLeftBadAnimation();
+		}
+	}
+
+	private void CheckUpSideCells()
+	{
+		if (_selectedPresenter.IndexY == 0)
+		{
+			_selectedPresenter.ActivateBadWayAnimation();
+		}
+		else if (CheckLeftCellsAvailableToMerge(_selectedPresenter.IndexY, _columnsPresenters[_selectedPresenter.IndexX]))
+		{
+			_selectedPresenter.ActivateUpAnimation();
+		}
+		else
+		{
+			_selectedPresenter.ActivateUpBadAnimation();
+		}
+	}
+
+	private void CheckDownSideCells()
+	{
+		if (_selectedPresenter.IndexY == _columnsPresenters[_selectedPresenter.IndexX].Count - 1)
+		{
+			_selectedPresenter.ActivateBadWayAnimation();
+		}
+		else if (CheckRightCellsAvailableToMerge(_selectedPresenter.IndexY, _columnsPresenters[_selectedPresenter.IndexX]))
+		{
+			_selectedPresenter.ActivateDownAnimation();
+		}
+		else
+		{
+			_selectedPresenter.ActivateDownBadAnimation();
 		}
 	}
 

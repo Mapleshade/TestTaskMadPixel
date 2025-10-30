@@ -6,7 +6,7 @@ public class CellPresenter : UiPresenter
 	private readonly ViewCellRootPool _viewCellRootPool;
 	private readonly Tween _selectedAnimation;
 	private readonly Tween _badWayAnimation;
-	private readonly Tween _disappearAnimation;
+	// private readonly Tween _disappearAnimation;
 	private readonly Tween _leftMoveAnimation;
 	private readonly Tween _rightMoveAnimation;
 	private readonly Tween _upMoveAnimation;
@@ -20,7 +20,6 @@ public class CellPresenter : UiPresenter
 	public Transform ViewTransform => View.transform;
 	public int IndexX { get; private set; }
 	public int IndexY { get; private set; }
-	private bool _needToDisappear;
 
 	public CellPresenter(ViewCellRootPool pool)
 	{
@@ -42,13 +41,6 @@ public class CellPresenter : UiPresenter
 			.SetAutoKill(false)
 			.Pause();
 
-		_disappearAnimation = DOTween.Sequence()
-			.Append(View.CanvasGroupFruitsRoot.DOFade(0, 1f))
-			.AppendCallback(AfterDisappear)
-			.SetId(this)
-			.SetAutoKill(false)
-			.Pause();
-
 		#endregion
 
 		#region move animations
@@ -59,6 +51,7 @@ public class CellPresenter : UiPresenter
 
 		_leftMoveAnimation = DOTween.Sequence()
 			.Append(View.PanelFruitsRoot.DOAnchorPos(new Vector2(-cellWidth, 0f), 0.5f))
+			.Append(View.CanvasGroupFruitsRoot.DOFade(0, 1f))
 			.AppendCallback(AfterMove)
 			.SetId(this)
 			.SetAutoKill(false)
@@ -66,6 +59,7 @@ public class CellPresenter : UiPresenter
 
 		_rightMoveAnimation = DOTween.Sequence()
 			.Append(View.PanelFruitsRoot.DOAnchorPos(new Vector2(cellWidth, 0f), 0.5f))
+			.Append(View.CanvasGroupFruitsRoot.DOFade(0, 1f))
 			.AppendCallback(AfterMove)
 			.SetId(this)
 			.SetAutoKill(false)
@@ -73,6 +67,7 @@ public class CellPresenter : UiPresenter
 
 		_upMoveAnimation = DOTween.Sequence()
 			.Append(View.PanelFruitsRoot.DOAnchorPos(new Vector2(0f, cellHeight), 0.5f))
+			.Append(View.CanvasGroupFruitsRoot.DOFade(0, 1f))
 			.AppendCallback(AfterMove)
 			.SetId(this)
 			.SetAutoKill(false)
@@ -80,6 +75,7 @@ public class CellPresenter : UiPresenter
 
 		_downMoveAnimation = DOTween.Sequence()
 			.Append(View.PanelFruitsRoot.DOAnchorPos(new Vector2(0f, -cellHeight), 0.5f))
+			.Append(View.CanvasGroupFruitsRoot.DOFade(0, 1f))
 			.AppendCallback(AfterMove)
 			.SetId(this)
 			.SetAutoKill(false)
@@ -215,13 +211,6 @@ public class CellPresenter : UiPresenter
 
 	private void AfterMove()
 	{
-		if (_needToDisappear)
-		{
-			_needToDisappear = false;
-			_disappearAnimation.Restart();
-			return;
-		}
-
 		_rightMoveAnimation.Rewind();
 		_leftMoveAnimation.Rewind();
 		_upMoveAnimation.Rewind();
@@ -235,16 +224,6 @@ public class CellPresenter : UiPresenter
 		_leftBadMoveAnimation.Rewind();
 		_upBadMoveAnimation.Rewind();
 		_downBadMoveAnimation.Rewind();
-		View.PanelFruitsRoot.anchoredPosition = Vector2.zero;
-	}
-
-	private void AfterDisappear()
-	{
-		_disappearAnimation.Rewind();
-		_rightMoveAnimation.Rewind();
-		_leftMoveAnimation.Rewind();
-		_upMoveAnimation.Rewind();
-		_downMoveAnimation.Rewind();
 		View.PanelFruitsRoot.anchoredPosition = Vector2.zero;
 	}
 
