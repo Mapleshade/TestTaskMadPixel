@@ -162,49 +162,49 @@ public class CellPresenter : UiPresenter
 
 	public void ActivateLeftAnimation()
 	{
-		if (!_leftMoveAnimation.IsPlaying())
+		if (!HasPlayingMoveAnimation())
 			_leftMoveAnimation.Restart();
 	}
 
 	public void ActivateRightAnimation()
 	{
-		if (!_rightMoveAnimation.IsPlaying())
+		if (!HasPlayingMoveAnimation())
 			_rightMoveAnimation.Restart();
 	}
 
 	public void ActivateUpAnimation()
 	{
-		if (!_upMoveAnimation.IsPlaying())
+		if (!HasPlayingMoveAnimation())
 			_upMoveAnimation.Restart();
 	}
 
 	public void ActivateDownAnimation()
 	{
-		if (!_downMoveAnimation.IsPlaying())
+		if (!HasPlayingMoveAnimation())
 			_downMoveAnimation.Restart();
 	}
 
 	public void ActivateLeftBadAnimation()
 	{
-		if (!_leftBadMoveAnimation.IsPlaying())
+		if (!HasPlayingMoveAnimation())
 			_leftBadMoveAnimation.Restart();
 	}
 
 	public void ActivateRightBadAnimation()
 	{
-		if (!_rightBadMoveAnimation.IsPlaying())
+		if (!HasPlayingMoveAnimation())
 			_rightBadMoveAnimation.Restart();
 	}
 
 	public void ActivateUpBadAnimation()
 	{
-		if (!_upBadMoveAnimation.IsPlaying())
+		if (!HasPlayingMoveAnimation())
 			_upBadMoveAnimation.Restart();
 	}
 
 	public void ActivateDownBadAnimation()
 	{
-		if (!_downBadMoveAnimation.IsPlaying())
+		if (!HasPlayingMoveAnimation())
 			_downBadMoveAnimation.Restart();
 	}
 
@@ -221,6 +221,7 @@ public class CellPresenter : UiPresenter
 		_leftMoveAnimation.Rewind();
 		_upMoveAnimation.Rewind();
 		_downMoveAnimation.Rewind();
+		View.PanelFruitsRoot.anchoredPosition = Vector2.zero;
 	}
 
 	private void AfterBadMove()
@@ -229,6 +230,7 @@ public class CellPresenter : UiPresenter
 		_leftBadMoveAnimation.Rewind();
 		_upBadMoveAnimation.Rewind();
 		_downBadMoveAnimation.Rewind();
+		View.PanelFruitsRoot.anchoredPosition = Vector2.zero;
 	}
 
 	private void AfterDisappear()
@@ -238,8 +240,20 @@ public class CellPresenter : UiPresenter
 		_leftMoveAnimation.Rewind();
 		_upMoveAnimation.Rewind();
 		_downMoveAnimation.Rewind();
+		View.PanelFruitsRoot.anchoredPosition = Vector2.zero;
 	}
 
+	private bool HasPlayingMoveAnimation()
+	{
+		return _rightMoveAnimation.IsPlaying()
+				|| _leftMoveAnimation.IsPlaying()
+				|| _upMoveAnimation.IsPlaying()
+				|| _downMoveAnimation.IsPlaying()
+				|| _rightBadMoveAnimation.IsPlaying()
+				|| _leftBadMoveAnimation.IsPlaying()
+				|| _upBadMoveAnimation.IsPlaying()
+				|| _downBadMoveAnimation.IsPlaying();
+	}
 	#endregion
 
 	public override void Dispose()
