@@ -71,7 +71,7 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 					else
 					{
 						var newCellType = GetRandomCellType(rowList[indexSecondSubsequent].CellType);
-						Debug.Log($"switch type from {rowList[indexSecondSubsequent].CellType} to {newCellType} for {rowList[indexSecondSubsequent].ViewTransform.name}.");
+						Debug.Log($"rows switch type from {rowList[indexSecondSubsequent].CellType} to {newCellType} for {rowList[indexSecondSubsequent].ViewTransform.name}.");
 						rowList[indexSecondSubsequent].SetType(newCellType);
 					}
 				}
@@ -89,7 +89,7 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 					else
 					{
 						var newCellType = GetRandomCellType(rowList[indexFirstSubsequent].CellType);
-						Debug.Log($"switch type from {rowList[indexSecondSubsequent].CellType} to {newCellType} for {rowList[indexFirstSubsequent].ViewTransform.name}.");
+						Debug.Log($"rows switch type from {rowList[indexSecondSubsequent].CellType} to {newCellType} for {rowList[indexFirstSubsequent].ViewTransform.name}.");
 						rowList[indexFirstSubsequent].SetType(newCellType);
 					}
 				}
@@ -100,22 +100,43 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 		for (var x = 0; x < Utils.PlateSizeX; x++)
 		{
 			var columnList = _columnsPresenters[x];
-			for (var y = 0; y < columnList.Count - 3; y++)
+			for (var y = 1; y < columnList.Count - 3; y++)
 			{
-				if (columnList[y].CellType == columnList[y + 1].CellType
-					&& columnList[y].CellType == columnList[y + 2].CellType)
+				var indexFirstSubsequent = y + 1;
+				var indexSecondSubsequent = y + 2;
+				if (columnList[y].CellType == columnList[indexFirstSubsequent].CellType
+					&& columnList[y].CellType == columnList[indexSecondSubsequent].CellType)
 				{
-					if (columnList[y + 2].CellType != columnList[y + 3].CellType)
+					var indexThirdSubsequent = y + 3;
+					if (columnList[indexSecondSubsequent].CellType != columnList[indexThirdSubsequent].CellType)
 					{
-						(columnList[y + 2], columnList[y + 3]) = (columnList[y + 3], columnList[y + 2]);
-						(_rowsPresenters[y + 2][x], _rowsPresenters[y + 3][x]) = (_rowsPresenters[y + 3][x], _rowsPresenters[y + 2][x]);
-						SwitchTransformsInHierarchy(columnList[y + 2].ViewTransform, columnList[y + 3].ViewTransform);
+						(columnList[indexSecondSubsequent], columnList[indexThirdSubsequent]) = (columnList[indexThirdSubsequent], columnList[indexSecondSubsequent]);
+						(_rowsPresenters[indexSecondSubsequent][x], _rowsPresenters[indexThirdSubsequent][x]) = (_rowsPresenters[indexThirdSubsequent][x], _rowsPresenters[indexSecondSubsequent][x]);
+						SwitchTransformsInHierarchy(columnList[indexSecondSubsequent].ViewTransform, columnList[indexThirdSubsequent].ViewTransform);
 					}
 					else
 					{
-						var newCellType = GetRandomCellType(columnList[y + 2].CellType);
-						Debug.Log($"switch type from {columnList[y + 2].CellType} to {newCellType} for {columnList[y + 2].ViewTransform.name}.");
-						columnList[y + 2].SetType(newCellType);
+						var newCellType = GetRandomCellType(columnList[indexSecondSubsequent].CellType);
+						Debug.Log($"columns switch type from {columnList[indexSecondSubsequent].CellType} to {newCellType} for {columnList[indexSecondSubsequent].ViewTransform.name}.");
+						columnList[indexSecondSubsequent].SetType(newCellType);
+					}
+				}
+				
+				var indexFirstPrevious = y - 1;
+				if (columnList[y].CellType == columnList[indexFirstSubsequent].CellType
+					&& columnList[y].CellType == columnList[indexFirstPrevious].CellType)
+				{
+					if (columnList[indexFirstSubsequent].CellType != columnList[indexSecondSubsequent].CellType)
+					{
+						(columnList[indexFirstSubsequent], columnList[indexSecondSubsequent]) = (columnList[indexSecondSubsequent], columnList[indexFirstSubsequent]);
+						(_rowsPresenters[indexFirstSubsequent][x], _rowsPresenters[indexSecondSubsequent][x]) = (_rowsPresenters[indexSecondSubsequent][x], _rowsPresenters[indexFirstSubsequent][x]);
+						SwitchTransformsInHierarchy(columnList[indexFirstSubsequent].ViewTransform, columnList[indexSecondSubsequent].ViewTransform);
+					}
+					else
+					{
+						var newCellType = GetRandomCellType(columnList[indexFirstSubsequent].CellType);
+						Debug.Log($"columns switch type from {columnList[indexSecondSubsequent].CellType} to {newCellType} for {columnList[indexFirstSubsequent].ViewTransform.name}.");
+						columnList[indexFirstSubsequent].SetType(newCellType);
 					}
 				}
 			}
