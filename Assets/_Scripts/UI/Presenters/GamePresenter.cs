@@ -8,10 +8,11 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 	private readonly CellPresenterFactory _cellPresenterFactory;
 	private readonly SignalBus _signalBus;
 	private readonly CompositeDisposable _disposables = new ();
-	private readonly List<CellPresenter> _allPresenters = new();
+	private readonly Dictionary<string, CellPresenter> _allPresenters = new();
 	private readonly Dictionary<int, List<CellPresenter>> _rowsPresenters = new();
 	private readonly Dictionary<int, List<CellPresenter>> _columnsPresenters = new();
 	private readonly int _cellTypesCount;
+	private CellPresenter _selectedPresenter;
 
 	public GamePresenter(ViewGame view,
 		CellPresenterFactory cellPresenterFactory,
@@ -58,14 +59,16 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 			for (var y = 0; y < Utils.PlateSizeY; y++)
 			{
 				var cellPresenter = _cellPresenterFactory.Create();
-				_allPresenters.Add(cellPresenter);
+				var cellName = $"Cell_{x}_{y}";
+				cellPresenter.SetViewName(cellName);
+
+				_allPresenters.Add(cellName, cellPresenter);
 				_rowsPresenters[x].Add(cellPresenter);
 				_columnsPresenters[y].Add(cellPresenter);
 
 				var randomCellTypeIndex = Random.Range(0, _cellTypesCount);
 				var randomCellType = (CellTypeEnum) randomCellTypeIndex;
 				cellPresenter.InitCell(isOdd, randomCellType, View.PanelPlate);
-				cellPresenter.SetViewName(x, y);
 				isOdd = !isOdd;
 			}
 
@@ -291,7 +294,11 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 
 	private void OnSignalPlayerTouchCellData(SignalPlayerTouchCellData signalData)
 	{
-		
+		if (_allPresenters.TryGetValue(signalData.SelectedViewCellRoot.name, out var presenter))
+		{
+			presenter.SetActiveSelectedAnimation(true);
+			_selectedPresenter = presenter;
+		}
 	}
 
 	private void OnSignalPlayerTouchProcessData(SignalPlayerTouchProcessData signalData)
@@ -301,7 +308,11 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 
 	private void OnSignalResetPlayerInputData(SignalResetPlayerInputData signalData)
 	{
-		
+		if (_selectedPresenter == null)
+			return;
+
+		_selectedPresenter.SetActiveSelectedAnimation(false);
+		_selectedPresenter = null;
 	}
 
 	public override void Dispose()
@@ -311,6 +322,6 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 		_disposables.Dispose();
 
 		foreach (var cellPresenter in _allPresenters)
-			cellPresenter.Dispose();
+			cellPresenter.Value.Dispose();
 	}
 }

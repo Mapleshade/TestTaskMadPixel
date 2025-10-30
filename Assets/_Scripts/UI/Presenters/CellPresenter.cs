@@ -1,8 +1,10 @@
+using DG.Tweening;
 using UnityEngine;
 
 public class CellPresenter : UiPresenter
 {
 	private readonly ViewCellRootPool _viewCellRootPool;
+	private readonly Tween _selectedAnimation;
 	private ViewCellRoot View { get; }
 	public CellTypeEnum CellType { get; private set; }
 	public Transform ViewTransform => View.transform;
@@ -11,6 +13,12 @@ public class CellPresenter : UiPresenter
 	{
 		_viewCellRootPool = pool;
 		View = _viewCellRootPool.Spawn();
+
+		_selectedAnimation = DOTween.Sequence()
+			.Append(View.ImageShine.DOFade(0.3f, 1.5f)).SetLoops(-1, LoopType.Yoyo)
+			.SetId(this)
+			.SetAutoKill(false)
+			.Pause();
 	}
 
 	public void SetType(CellTypeEnum cellType)
@@ -30,14 +38,25 @@ public class CellPresenter : UiPresenter
 		SetType(cellType);
 	}
 
-	public void SetViewName(int xIndex, int yIndex)
+	public void SetViewName(string cellName)
 	{
-		View.name = $"Cell_{xIndex}_{yIndex}";
+		View.name = cellName;
+	}
+
+	public void SetActiveSelectedAnimation(bool isActive)
+	{
+		View.ImageShine.enabled = isActive;
+
+		if (isActive)
+			_selectedAnimation.Play();
+		else
+			_selectedAnimation.Rewind();
 	}
 
 	public override void Dispose()
 	{
 		base.Dispose();
+		DOTween.Kill(this);
 		_viewCellRootPool.Despawn(View);
 	}
 }
