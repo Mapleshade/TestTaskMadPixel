@@ -7,6 +7,8 @@ public class ViewCellRoot : BaseUIView
 	[SerializeField]
 	private RectTransform _panelFruitsRoot;
 	[SerializeField]
+	private Transform _panelBackgroundsRoot;
+	[SerializeField]
 	private RectTransform _paneRoot;
 	[SerializeField]
 	private Image _imageShine;
@@ -23,4 +25,5 @@ public class ViewCellRoot : BaseUIView
 	public List<CellTypeData> ImagesCellType => _imagesCellType;
 	public Image ImageShine => _imageShine;
 	public CanvasGroup CanvasGroupFruitsRoot => _canvasGroupFruitsRoot;
+	public Transform PanelBackgroundsRoot => _panelBackgroundsRoot;
 }

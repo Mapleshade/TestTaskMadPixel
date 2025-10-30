@@ -140,10 +140,12 @@ public class CellPresenter : UiPresenter
 			cellTypeData.PanelImage.CheckSetActive(cellTypeData.CellType == cellType);
 	}
 
-	public void InitCell(bool isLight, CellTypeEnum cellType, Transform parentTransform, int indexX, int indexY)
+	public void InitCell(bool isLight, CellTypeEnum cellType, Transform parentTransform, Transform parentForBackgroundsTransform, int indexX, int indexY)
 	{
 		View.transform.SetParent(parentTransform);
+		View.PanelBackgroundsRoot.SetParent(parentForBackgroundsTransform);
 		View.transform.localScale = Vector3.one;
+		View.PanelBackgroundsRoot.localScale = Vector3.one;
 		View.ImagesCellBackground[0].PanelBackground.CheckSetActive(isLight);
 		View.ImagesCellBackground[1].PanelBackground.CheckSetActive(!isLight);
 		SetType(cellType);

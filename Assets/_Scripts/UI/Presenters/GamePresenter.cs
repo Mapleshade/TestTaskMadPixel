@@ -68,7 +68,7 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 
 				var randomCellTypeIndex = Random.Range(0, _cellTypesCount);
 				var randomCellType = (CellTypeEnum) randomCellTypeIndex;
-				cellPresenter.InitCell(isOdd, randomCellType, View.PanelPlate, x, y);
+				cellPresenter.InitCell(isOdd, randomCellType, View.PanelPlate,  View.PanelBackgrounds, x, y);
 				isOdd = !isOdd;
 			}
 
