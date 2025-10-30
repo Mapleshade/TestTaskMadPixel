@@ -101,9 +101,7 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 			return;
 		}
 
-		var newCellType = GetRandomCellType(checkList[indexSecondSubsequent].CellType);
-		Debug.Log($"CheckTwoNextCells switch type from {checkList[indexSecondSubsequent].CellType} to {newCellType} for {checkList[indexSecondSubsequent].ViewTransform.name}.");
-		checkList[indexSecondSubsequent].SetType(newCellType);
+		SetNewRandomCellType(checkList, indexSecondSubsequent);
 	}
 
 	private void CheckPreviousAndNextCells(int currentIndex, int additionalIndex, List<CellPresenter> checkList,
@@ -133,9 +131,7 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 			return;
 		}
 
-		var newCellType = GetRandomCellType(checkList[indexFirstSubsequent].CellType);
-		Debug.Log($"CheckPreviousAndNextCells switch type from {checkList[indexSecondSubsequent].CellType} to {newCellType} for {checkList[indexFirstSubsequent].ViewTransform.name}.");
-		checkList[indexFirstSubsequent].SetType(newCellType);
+		SetNewRandomCellType(checkList, indexFirstSubsequent);
 	}
 
 	private void CheckCellAfterSwitch(int index, List<CellPresenter> checkList)
@@ -148,21 +144,13 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 		if (indexFirstSubsequent < checkList.Count
 			&& indexSecondSubsequent < checkList.Count
 			&& checkList[index].CellType == checkList[indexFirstSubsequent].CellType
-			&& checkList[index].CellType == checkList[indexSecondSubsequent].CellType)
-		{
-			var newCellType = GetRandomCellType(checkList[index].CellType);
-			Debug.Log($"CheckCellAfterSwitch switch type from {checkList[index].CellType} to {newCellType} for {checkList[index].ViewTransform.name}.");
-			checkList[index].SetType(newCellType);
-		}
-
-		if (indexFirstPrevious >= 0
+			&& checkList[index].CellType == checkList[indexSecondSubsequent].CellType
+			|| indexFirstPrevious >= 0
 			&& indexSecondPrevious >= 0
 			&& checkList[index].CellType == checkList[indexFirstPrevious].CellType
 			&& checkList[index].CellType == checkList[indexSecondPrevious].CellType)
 		{
-			var newCellType = GetRandomCellType(checkList[index].CellType);
-			Debug.Log($"CheckCellAfterSwitch switch type from {checkList[index].CellType} to {newCellType} for {checkList[index].ViewTransform.name}.");
-			checkList[index].SetType(newCellType);
+			SetNewRandomCellType(checkList, index);
 		}
 	}
 
@@ -193,9 +181,7 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 			return;
 		}
 
-		var newCellType = GetRandomCellType(checkList[indexSecondPrevious].CellType);
-		Debug.Log($"CheckLastThreeCells switch type from {checkList[indexSecondPrevious].CellType} to {newCellType} for {checkList[indexSecondPrevious].ViewTransform.name}.");
-		checkList[indexSecondPrevious].SetType(newCellType);
+		SetNewRandomCellType(checkList, indexSecondPrevious);
 	}
 
 	private void SwitchTransformsInHierarchy(Transform firstTransform, Transform secondTransform, string debugStr)
@@ -221,6 +207,12 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 		return randomCellType;
 	}
 
+	private void SetNewRandomCellType(List<CellPresenter> checkList, int cellIndex)
+	{
+		var newCellType = GetRandomCellType(checkList[cellIndex].CellType);
+		Debug.Log($"switch type from {checkList[cellIndex].CellType} to {newCellType} for {checkList[cellIndex].ViewTransform.name}.");
+		checkList[cellIndex].SetType(newCellType);
+	}
 	public override void Dispose()
 	{
 		base.Dispose();
