@@ -268,13 +268,25 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 		var indexFirstSubsequent = currentIndex + 1;
 		var indexSecondSubsequent = currentIndex + 2;
 		var indexThirdSubsequent = currentIndex + 3;
+		var indexFirstPrevious = currentIndex - 1;
+		var indexSecondPrevious = currentIndex - 2;
 
-		var isIndexesValid = indexFirstSubsequent < checkList.Count && indexSecondSubsequent < checkList.Count &&
-							indexThirdSubsequent < checkList.Count;
-		return isIndexesValid
+		var isForwardIndexesValid = indexFirstSubsequent < checkList.Count
+									&& indexSecondSubsequent < checkList.Count
+									&& indexThirdSubsequent < checkList.Count;
+
+		var isBackIndexesValid = indexFirstSubsequent < checkList.Count
+								&& indexFirstPrevious >= 0
+								&& indexSecondPrevious >= 0;
+
+		return isForwardIndexesValid
 				&& checkList[currentIndex].CellType != checkList[indexFirstSubsequent].CellType
 				&& checkList[currentIndex].CellType == checkList[indexSecondSubsequent].CellType
-				&& checkList[currentIndex].CellType == checkList[indexThirdSubsequent].CellType;
+				&& checkList[currentIndex].CellType == checkList[indexThirdSubsequent].CellType
+				|| isBackIndexesValid
+				&& checkList[currentIndex].CellType != checkList[indexFirstSubsequent].CellType
+				&& checkList[indexFirstSubsequent].CellType == checkList[indexFirstPrevious].CellType
+				&& checkList[indexFirstSubsequent].CellType == checkList[indexSecondPrevious].CellType;
 	}
 
 	private bool CheckLeftCellsAvailableToMerge(int currentIndex, List<CellPresenter> checkList)
@@ -282,12 +294,25 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 		var indexFirstPrevious = currentIndex - 1;
 		var indexSecondPrevious = currentIndex - 2;
 		var indexThirdPrevious = currentIndex - 3;
+		var indexFirstSubsequent = currentIndex + 1;
+		var indexSecondSubsequent = currentIndex + 2;
 
-		var isIndexesValid = indexFirstPrevious >= 0 && indexSecondPrevious >= 0 && indexThirdPrevious >= 0;
-		return isIndexesValid
+		var isBackIndexesValid = indexFirstPrevious
+			>= 0 && indexSecondPrevious >= 0
+				&& indexThirdPrevious >= 0;
+		
+		var isForwardIndexesValid = indexFirstSubsequent < checkList.Count
+									&& indexSecondSubsequent < checkList.Count
+									&& indexFirstPrevious >= 0;
+
+		return isBackIndexesValid
 				&& checkList[currentIndex].CellType != checkList[indexFirstPrevious].CellType
 				&& checkList[currentIndex].CellType == checkList[indexSecondPrevious].CellType
-				&& checkList[currentIndex].CellType == checkList[indexThirdPrevious].CellType;
+				&& checkList[currentIndex].CellType == checkList[indexThirdPrevious].CellType
+				|| isForwardIndexesValid
+				&& checkList[currentIndex].CellType != checkList[indexFirstPrevious].CellType
+				&& checkList[indexFirstPrevious].CellType == checkList[indexFirstSubsequent].CellType
+				&& checkList[indexFirstPrevious].CellType == checkList[indexSecondSubsequent].CellType;
 	}
 
 	#endregion
