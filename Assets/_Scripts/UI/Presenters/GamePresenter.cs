@@ -68,7 +68,7 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 
 				var randomCellTypeIndex = Random.Range(0, _cellTypesCount);
 				var randomCellType = (CellTypeEnum) randomCellTypeIndex;
-				cellPresenter.InitCell(isOdd, randomCellType, View.PanelPlate);
+				cellPresenter.InitCell(isOdd, randomCellType, View.PanelPlate, x, y);
 				isOdd = !isOdd;
 			}
 
@@ -303,7 +303,65 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 
 	private void OnSignalPlayerTouchProcessData(SignalPlayerTouchProcessData signalData)
 	{
-		
+		if (_selectedPresenter == null)
+			return;
+
+		var dotProductRight = Vector3.Dot(signalData.DirectionVector, Vector2.right);
+		var dotProductUp = Vector3.Dot(signalData.DirectionVector, Vector2.up);
+
+		if (dotProductRight > 0 && dotProductUp > 0)
+		{
+			//right side
+			if (dotProductRight > dotProductUp)
+			{
+				_selectedPresenter.ActivateRightAnimation();
+			}
+			//up side
+			else
+			{
+				_selectedPresenter.ActivateUpAnimation();
+			}
+		} else if (dotProductRight < 0 && dotProductUp < 0)
+		{
+			//left side
+			if (dotProductRight < dotProductUp)
+			{
+				_selectedPresenter.ActivateLeftAnimation();
+			}
+			//down side
+			else
+			{
+				_selectedPresenter.ActivateDownAnimation();
+			}
+		} else if (dotProductRight < 0 && dotProductUp > 0)
+		{
+			//left side
+			if (Mathf.Abs(dotProductRight) > dotProductUp)
+			{
+				_selectedPresenter.ActivateLeftAnimation();
+			}
+			//up side
+			else
+			{
+				_selectedPresenter.ActivateUpAnimation();
+			}
+		} else if (dotProductRight > 0 && dotProductUp < 0)
+		{
+			//right side
+			if (dotProductRight > Mathf.Abs(dotProductUp))
+			{
+				_selectedPresenter.ActivateRightAnimation();
+			}
+			//down side
+			else
+			{
+				_selectedPresenter.ActivateDownAnimation();
+			}
+		}
+		//staying on one place
+		else
+		{
+		}
 	}
 
 	private void OnSignalResetPlayerInputData(SignalResetPlayerInputData signalData)
