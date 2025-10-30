@@ -1,7 +1,11 @@
 using UnityEngine;
+using Zenject;
 
 public class PlayerStandaloneInputProvider : BasePlayerInputProvider
 {
+	public PlayerStandaloneInputProvider(SignalBus signalBus) : base(signalBus)
+	{
+	}
 	public override void Tick()
 	{
 		if (Input.GetMouseButtonDown(0))
@@ -17,10 +21,14 @@ public class PlayerStandaloneInputProvider : BasePlayerInputProvider
 			Vector2 mousePosition = Input.mousePosition;
 
 			MovingVector = Utils.GetClampedMovingVector(mousePosition - MovingStartPosition);
-			Debug.Log($"_movingVector: {MovingVector}");
+			SignalBus.Fire(new SignalPlayerTouchProcessData(MovingVector));
 		}
 
-		if (Input.GetMouseButtonUp(0))
-			MovingVector = Vector2.zero;
+		if (!Input.GetMouseButtonUp(0))
+			return;
+
+		MovingVector = Vector2.zero;
+		SignalBus.Fire(new SignalResetPlayerInputData());
 	}
+
 }

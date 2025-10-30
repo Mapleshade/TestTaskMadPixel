@@ -1,9 +1,14 @@
 ﻿using UnityEngine;
+using Zenject;
 
 public class PlayerMobileInputProvider : BasePlayerInputProvider
 {
 	private const int MaxTouchesCount = 1;
 	private InputTouchData _moveTouch;
+
+	public PlayerMobileInputProvider(SignalBus signalBus) : base(signalBus)
+	{
+	}
 
 	public override void Tick()
 	{
@@ -26,6 +31,7 @@ public class PlayerMobileInputProvider : BasePlayerInputProvider
 
 		_moveTouch.ResetTouch();
 		MovingVector = Vector2.zero;
+		SignalBus.Fire(new SignalResetPlayerInputData());
 	}
 
 	private void CalculateMoveVector()

@@ -5,17 +5,23 @@ using Zenject;
 
 public abstract class BasePlayerInputProvider : ITickable
 {
-	private readonly List<RaycastResult> _raycastResults = new List<RaycastResult>();
+	protected Vector2 MovingVector { get; set; }
+	protected Vector2 MovingStartPosition { get; set; }
+	protected SignalBus SignalBus { get; private set; }
+	private readonly List<RaycastResult> _raycastResults = new();
 	private EventSystem _eventSystem;
 	private PointerEventData _eventData;
-	protected Vector2 MovingStartPosition;
-	protected Vector2 MovingVector { get; set; }
+
+	protected BasePlayerInputProvider(SignalBus signalBus)
+	{
+		SignalBus = signalBus;
+	}
 
 	public virtual void Tick()
 	{
 	}
 
-	protected bool CheckUiTouch(Vector2 position)
+	protected void CheckUiTouch(Vector2 position)
 	{
 		_raycastResults.Clear();
 
@@ -32,15 +38,13 @@ public abstract class BasePlayerInputProvider : ITickable
 
 		currentEventSystem.RaycastAll(_eventData, _raycastResults);
 
-		for (int i = 0; i < _raycastResults.Count; i++)
+		for (var i = 0; i < _raycastResults.Count; i++)
 		{
-			RaycastResult raycastResult = _raycastResults[i];
+			var raycastResult = _raycastResults[i];
 			var component = raycastResult.gameObject.GetComponent<ViewCellRoot>();
-			if (component != null)
-				Debug.Log($"cellData: {component.transform.name}");
-		}
 
-		Debug.Log($"touch ui: {_raycastResults.Count > 0}");
-		return _raycastResults.Count > 0;
+			if (component != null)
+				SignalBus.Fire(new SignalPlayerTouchCellData(component));
+		}
 	}
 }

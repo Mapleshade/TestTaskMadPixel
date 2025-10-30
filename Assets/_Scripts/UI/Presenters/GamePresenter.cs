@@ -1,17 +1,24 @@
 using System.Collections.Generic;
+using UniRx;
 using UnityEngine;
+using Zenject;
 
 public class GamePresenter : BaseUIPresenter<ViewGame>
 {
 	private readonly CellPresenterFactory _cellPresenterFactory;
+	private readonly SignalBus _signalBus;
+	private readonly CompositeDisposable _disposables = new ();
 	private readonly List<CellPresenter> _allPresenters = new();
 	private readonly Dictionary<int, List<CellPresenter>> _rowsPresenters = new();
 	private readonly Dictionary<int, List<CellPresenter>> _columnsPresenters = new();
 	private readonly int _cellTypesCount;
 
-	public GamePresenter(ViewGame view, CellPresenterFactory cellPresenterFactory) : base(view)
+	public GamePresenter(ViewGame view,
+		CellPresenterFactory cellPresenterFactory,
+		SignalBus signalBus) : base(view)
 	{
 		_cellPresenterFactory = cellPresenterFactory;
+		_signalBus = signalBus;
 		_cellTypesCount = System.Enum.GetValues(typeof(CellTypeEnum)).Length;
 
 		for (var i = 0; i < Utils.PlateSizeY; i++)
@@ -25,6 +32,26 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 	{
 		base.Initialize();
 
+		// _signalBus.GetStream<SignalPlayerTouchCellData>()
+		// 	.Subscribe(OnApplicationPause)
+		// 	.AddTo(_disposables);
+		//
+		// _signalBus.GetStream<SignalPlayerTouchProcessData>()
+		// 	.Subscribe(OnApplicationPause)
+		// 	.AddTo(_disposables);
+		//
+		// _signalBus.GetStream<SignalResetPlayerInputData>()
+		// 	.Subscribe(OnApplicationPause)
+		// 	.AddTo(_disposables);
+
+		GenerateGamePlate();
+		CheckStartPlate();
+	}
+
+	#region Generate Game Plate
+
+	private void GenerateGamePlate()
+	{
 		var isOdd = false;
 		for (var x = 0; x < Utils.PlateSizeX; x++)
 		{
@@ -44,11 +71,7 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 
 			isOdd = !isOdd;
 		}
-
-		CheckStartPlate();
 	}
-
-	#region Generate Game Plate
 
 	private void CheckStartPlate()
 	{
@@ -269,6 +292,8 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 	public override void Dispose()
 	{
 		base.Dispose();
+
+		_disposables.Dispose();
 
 		foreach (var cellPresenter in _allPresenters)
 			cellPresenter.Dispose();

@@ -204,6 +204,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   CanvasSortOrder: 0
+  _panelFruitsRoot: {fileID: 1888161111604114954}
   _imagesCellBackground:
   - _cellBackground: 0
     _panelBackground: {fileID: 4521392814601045932}
