@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class GamePresenter : BaseUIPresenter<ViewGame>
@@ -48,6 +49,8 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 		CheckStartPlate();
 	}
 
+	#region Generate Game Plate
+
 	private void CheckStartPlate()
 	{
 		//check rows
@@ -75,6 +78,9 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 
 			CheckLastThreeCells(columnList, _rowsPresenters, x);
 		}
+
+		var isPossible = CheckForPossibilityOfMergingOnGamePlate();
+		Debug.Log($"plate has at least one option for merger: {isPossible}");
 	}
 
 	private void CheckTwoNextCells(int currentIndex, int additionalIndex, List<CellPresenter> checkList,
@@ -213,6 +219,77 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 		Debug.Log($"switch type from {checkList[cellIndex].CellType} to {newCellType} for {checkList[cellIndex].ViewTransform.name}.");
 		checkList[cellIndex].SetType(newCellType);
 	}
+
+	#endregion
+
+	private bool CheckForPossibilityOfMergingOnGamePlate()
+	{
+		var isPossible = false;
+		for (var y = 0; y < Utils.PlateSizeY; y++)
+		{
+			var rowList = _rowsPresenters[y];
+			for (var x = 0; x < rowList.Count; x++)
+			{
+				if (CheckRightCellsAvailableToMerge(x, rowList)
+					|| CheckLeftCellsAvailableToMerge(x, rowList))
+				{
+					isPossible = true;
+					break;
+				}
+				if (isPossible)
+					break;
+			}
+		}
+
+		if (isPossible)
+			return true;
+
+		//checkColumns
+		for (var x = 0; x < Utils.PlateSizeX; x++)
+		{
+			var columnList = _columnsPresenters[x];
+			for (var y = 0; y < columnList.Count; y++)
+			{
+				if (CheckRightCellsAvailableToMerge(y, columnList)
+					|| CheckLeftCellsAvailableToMerge(y, columnList))
+				{
+					isPossible = true;
+					break;
+				}
+				if (isPossible)
+					break;
+			}
+		}
+
+		return isPossible;
+	}
+	
+	private bool CheckRightCellsAvailableToMerge(int currentIndex, List<CellPresenter> checkList)
+	{
+		var indexFirstSubsequent = currentIndex + 1;
+		var indexSecondSubsequent = currentIndex + 2;
+		var indexThirdSubsequent = currentIndex + 3;
+
+		var isIndexesValid = indexFirstSubsequent < checkList.Count && indexSecondSubsequent < checkList.Count && indexThirdSubsequent < checkList.Count;
+		return isIndexesValid
+				&& checkList[currentIndex].CellType == checkList[indexFirstSubsequent].CellType
+				&& checkList[currentIndex].CellType != checkList[indexSecondSubsequent].CellType
+				&& checkList[currentIndex].CellType == checkList[indexThirdSubsequent].CellType;
+	}
+	
+	private bool CheckLeftCellsAvailableToMerge(int currentIndex, List<CellPresenter> checkList)
+	{
+		var indexFirstPrevious = currentIndex - 1;
+		var indexSecondPrevious = currentIndex - 2;
+		var indexThirdPrevious = currentIndex - 3;
+
+		var isIndexesValid = indexFirstPrevious >= 0 && indexSecondPrevious >= 0 && indexThirdPrevious >= 0;
+		return isIndexesValid
+				&& checkList[currentIndex].CellType == checkList[indexFirstPrevious].CellType
+				&& checkList[currentIndex].CellType != checkList[indexSecondPrevious].CellType
+				&& checkList[currentIndex].CellType == checkList[indexThirdPrevious].CellType;
+	}
+
 	public override void Dispose()
 	{
 		base.Dispose();
