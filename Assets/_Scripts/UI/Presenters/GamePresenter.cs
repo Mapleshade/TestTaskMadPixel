@@ -32,17 +32,17 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 	{
 		base.Initialize();
 
-		// _signalBus.GetStream<SignalPlayerTouchCellData>()
-		// 	.Subscribe(OnApplicationPause)
-		// 	.AddTo(_disposables);
-		//
-		// _signalBus.GetStream<SignalPlayerTouchProcessData>()
-		// 	.Subscribe(OnApplicationPause)
-		// 	.AddTo(_disposables);
-		//
-		// _signalBus.GetStream<SignalResetPlayerInputData>()
-		// 	.Subscribe(OnApplicationPause)
-		// 	.AddTo(_disposables);
+		_signalBus.GetStream<SignalPlayerTouchCellData>()
+			.Subscribe(OnSignalPlayerTouchCellData)
+			.AddTo(_disposables);
+		
+		_signalBus.GetStream<SignalPlayerTouchProcessData>()
+			.Subscribe(OnSignalPlayerTouchProcessData)
+			.AddTo(_disposables);
+		
+		_signalBus.GetStream<SignalResetPlayerInputData>()
+			.Subscribe(OnSignalResetPlayerInputData)
+			.AddTo(_disposables);
 
 		GenerateGamePlate();
 		CheckStartPlate();
@@ -288,6 +288,21 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 	}
 
 	#endregion
+
+	private void OnSignalPlayerTouchCellData(SignalPlayerTouchCellData signalData)
+	{
+		
+	}
+
+	private void OnSignalPlayerTouchProcessData(SignalPlayerTouchProcessData signalData)
+	{
+		
+	}
+
+	private void OnSignalResetPlayerInputData(SignalResetPlayerInputData signalData)
+	{
+		
+	}
 
 	public override void Dispose()
 	{
