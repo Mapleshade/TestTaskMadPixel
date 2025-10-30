@@ -26,6 +26,10 @@ public class GameInstaller : MonoInstaller<GameInstaller>
             .UnderTransformGroup("ViewCellRootPool");
         
         Container.BindFactory<CellPresenter, CellPresenterFactory>();
-        Container.Bind(typeof(ITickable)).To<PlayerInputProvider>().AsSingle().NonLazy();
+#if UNITY_EDITOR
+        Container.Bind(typeof(ITickable)).To<PlayerStandaloneInputProvider>().AsSingle().NonLazy();
+#else
+        Container.Bind(typeof(ITickable)).To<PlayerMobileInputProvider>().AsSingle().NonLazy();
+#endif
     }
 }

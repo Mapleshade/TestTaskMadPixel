@@ -6,6 +6,8 @@ public static class Utils
 {
 	public const int PlateSizeX = 8;
 	public const int PlateSizeY = 8;
+	private const float ScreenMovingMaxDeltaPersent = .15f;
+	private static float ScreenMovingMaxDelta { get; } = Screen.height * ScreenMovingMaxDeltaPersent;
 
 	public static Transform GetCanvas(this BaseUIView view, List<ViewCanvas> viewCanvases)
 	{
@@ -17,5 +19,11 @@ public static class Utils
 		}
 
 		return viewCanvas.Root;
+	}
+	
+	public static Vector2 GetClampedMovingVector(Vector2 movingVector)
+	{
+		movingVector = Vector2.ClampMagnitude(movingVector, ScreenMovingMaxDelta);
+		return Vector2.ClampMagnitude(movingVector, movingVector.magnitude / ScreenMovingMaxDelta);
 	}
 }
