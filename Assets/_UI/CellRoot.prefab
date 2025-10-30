@@ -183,6 +183,7 @@ RectTransform:
   m_Children:
   - {fileID: 8833337296932624772}
   - {fileID: 8276686354568620313}
+  - {fileID: 7761771840735588530}
   - {fileID: 1888161111604114954}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -205,7 +206,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   CanvasSortOrder: 0
   _panelFruitsRoot: {fileID: 1888161111604114954}
+  _paneRoot: {fileID: 9000541138471823780}
   _imageShine: {fileID: 5429328433312618888}
+  _canvasGroupFruitsRoot: {fileID: 3733383847827846}
   _imagesCellBackground:
   - _cellBackground: 0
     _panelBackground: {fileID: 4521392814601045932}
@@ -646,6 +649,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1888161111604114954}
+  - component: {fileID: 3733383847827846}
   m_Layer: 5
   m_Name: FruitsRoot
   m_TagString: Untagged
@@ -665,7 +669,6 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 7761771840735588530}
   - {fileID: 9050620011289562985}
   - {fileID: 1947537408908846956}
   - {fileID: 9041192190321920384}
@@ -679,6 +682,18 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: -10, y: -10}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!225 &3733383847827846
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7322436693944017283}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 0
+  m_BlocksRaycasts: 0
+  m_IgnoreParentGroups: 0
 --- !u!1 &8179611679072007029
 GameObject:
   m_ObjectHideFlags: 0
@@ -784,12 +799,12 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1888161111604114954}
+  m_Father: {fileID: 9000541138471823780}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 150, y: 150}
+  m_SizeDelta: {x: 50, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &4361375311974895059
 CanvasRenderer:
