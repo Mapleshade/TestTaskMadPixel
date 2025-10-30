@@ -54,17 +54,17 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 	private void GenerateGamePlate()
 	{
 		var isOdd = false;
-		for (var x = 0; x < Utils.PlateSizeX; x++)
+		for (var y = 0; y < Utils.PlateSizeY; y++)
 		{
-			for (var y = 0; y < Utils.PlateSizeY; y++)
+			for (var x = 0; x < Utils.PlateSizeX; x++)
 			{
 				var cellPresenter = _cellPresenterFactory.Create();
 				var cellName = $"Cell_{x}_{y}";
 				cellPresenter.SetViewName(cellName);
 
 				_allPresenters.Add(cellName, cellPresenter);
-				_rowsPresenters[x].Add(cellPresenter);
-				_columnsPresenters[y].Add(cellPresenter);
+				_rowsPresenters[y].Add(cellPresenter);
+				_columnsPresenters[x].Add(cellPresenter);
 
 				var randomCellTypeIndex = Random.Range(0, _cellTypesCount);
 				var randomCellType = (CellTypeEnum) randomCellTypeIndex;
@@ -272,8 +272,8 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 		var isIndexesValid = indexFirstSubsequent < checkList.Count && indexSecondSubsequent < checkList.Count &&
 							indexThirdSubsequent < checkList.Count;
 		return isIndexesValid
-				&& checkList[currentIndex].CellType == checkList[indexFirstSubsequent].CellType
-				&& checkList[currentIndex].CellType != checkList[indexSecondSubsequent].CellType
+				&& checkList[currentIndex].CellType != checkList[indexFirstSubsequent].CellType
+				&& checkList[currentIndex].CellType == checkList[indexSecondSubsequent].CellType
 				&& checkList[currentIndex].CellType == checkList[indexThirdSubsequent].CellType;
 	}
 
@@ -285,8 +285,8 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 
 		var isIndexesValid = indexFirstPrevious >= 0 && indexSecondPrevious >= 0 && indexThirdPrevious >= 0;
 		return isIndexesValid
-				&& checkList[currentIndex].CellType == checkList[indexFirstPrevious].CellType
-				&& checkList[currentIndex].CellType != checkList[indexSecondPrevious].CellType
+				&& checkList[currentIndex].CellType != checkList[indexFirstPrevious].CellType
+				&& checkList[currentIndex].CellType == checkList[indexSecondPrevious].CellType
 				&& checkList[currentIndex].CellType == checkList[indexThirdPrevious].CellType;
 	}
 
@@ -314,7 +314,7 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 			//right side
 			if (dotProductRight > dotProductUp)
 			{
-				_selectedPresenter.ActivateRightAnimation();
+				CheckRightSideCells();
 			}
 			//up side
 			else
@@ -326,7 +326,7 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 			//left side
 			if (dotProductRight < dotProductUp)
 			{
-				_selectedPresenter.ActivateLeftAnimation();
+				CheckLeftSideCells();
 			}
 			//down side
 			else
@@ -338,7 +338,7 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 			//left side
 			if (Mathf.Abs(dotProductRight) > dotProductUp)
 			{
-				_selectedPresenter.ActivateLeftAnimation();
+				CheckLeftSideCells();
 			}
 			//up side
 			else
@@ -350,7 +350,7 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 			//right side
 			if (dotProductRight > Mathf.Abs(dotProductUp))
 			{
-				_selectedPresenter.ActivateRightAnimation();
+				CheckRightSideCells();
 			}
 			//down side
 			else
@@ -361,6 +361,38 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 		//staying on one place
 		else
 		{
+		}
+	}
+
+	private void CheckRightSideCells()
+	{
+		if (_selectedPresenter.IndexX == _rowsPresenters[_selectedPresenter.IndexY].Count - 1)
+		{
+			_selectedPresenter.ActivateBadWayAnimation();
+		}
+		else if (CheckRightCellsAvailableToMerge(_selectedPresenter.IndexX, _rowsPresenters[_selectedPresenter.IndexY]))
+		{
+			_selectedPresenter.ActivateRightAnimation();
+		}
+		else
+		{
+			_selectedPresenter.ActivateRightBadAnimation();
+		}
+	}
+
+	private void CheckLeftSideCells()
+	{
+		if (_selectedPresenter.IndexX == 0)
+		{
+			_selectedPresenter.ActivateBadWayAnimation();
+		}
+		else if (CheckLeftCellsAvailableToMerge(_selectedPresenter.IndexX, _rowsPresenters[_selectedPresenter.IndexY]))
+		{
+			_selectedPresenter.ActivateLeftAnimation();
+		}
+		else
+		{
+			_selectedPresenter.ActivateLeftBadAnimation();
 		}
 	}
 

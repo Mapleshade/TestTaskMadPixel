@@ -166,6 +166,11 @@ public class CellPresenter : UiPresenter
 			_leftMoveAnimation.Restart();
 	}
 
+	public void ActivateBadWayAnimation()
+	{
+		_badWayAnimation.Restart();
+	}
+
 	public void ActivateRightAnimation()
 	{
 		if (!HasPlayingMoveAnimation())
