@@ -356,8 +356,8 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 
 		isMergePossible = isBackIndexesValid
 						&& (checkList[currentIndex].CellType != parallelList[currentIndex].CellType
-							&& parallelList[currentIndex].CellType == checkList[indexFirstPrevious].CellType
-							&& parallelList[currentIndex].CellType == checkList[indexSecondPrevious].CellType
+							&& checkList[currentIndex].CellType == parallelList[indexFirstPrevious].CellType
+							&& checkList[currentIndex].CellType == parallelList[indexSecondPrevious].CellType
 							|| checkList[currentIndex].CellType != parallelList[currentIndex].CellType
 							&& parallelList[currentIndex].CellType == checkList[indexFirstPrevious].CellType
 							&& parallelList[currentIndex].CellType == checkList[indexSecondPrevious].CellType);
@@ -469,6 +469,7 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 			_selectedPresenter.ActivateRightAnimation();
 			var presenter = _rowsPresenters[_selectedPresenter.IndexY][_selectedPresenter.IndexX + 1];
 			presenter.ActivateLeftAnimation();
+			DestroyCells(_selectedPresenter, presenter);
 		}
 		else if (_selectedPresenter.IndexX + 1 < _columnsPresenters.Count && CheckCellsFromParallelLineAvailableToMerge
 					(_selectedPresenter.IndexY, _columnsPresenters[_selectedPresenter.IndexX], _columnsPresenters[_selectedPresenter.IndexX + 1]))
@@ -476,6 +477,7 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 			_selectedPresenter.ActivateRightAnimation();
 			var presenter = _rowsPresenters[_selectedPresenter.IndexY][_selectedPresenter.IndexX + 1];
 			presenter.ActivateLeftAnimation();
+			DestroyCells(_selectedPresenter, presenter);
 		}
 		else
 		{
@@ -496,6 +498,7 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 			_selectedPresenter.ActivateLeftAnimation();
 			var presenter = _rowsPresenters[_selectedPresenter.IndexY][_selectedPresenter.IndexX - 1];
 			presenter.ActivateRightAnimation();
+			DestroyCells(_selectedPresenter, presenter);
 		}
 		else if (_selectedPresenter.IndexX - 1 >= 0 && CheckCellsFromParallelLineAvailableToMerge
 					(_selectedPresenter.IndexY, _columnsPresenters[_selectedPresenter.IndexX], _columnsPresenters[_selectedPresenter.IndexX - 1]))
@@ -503,6 +506,7 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 			_selectedPresenter.ActivateLeftAnimation();
 			var presenter = _rowsPresenters[_selectedPresenter.IndexY][_selectedPresenter.IndexX - 1];
 			presenter.ActivateRightAnimation();
+			DestroyCells(_selectedPresenter, presenter);
 		}
 		else
 		{
@@ -524,6 +528,7 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 			_selectedPresenter.ActivateUpAnimation();
 			var presenter = _columnsPresenters[_selectedPresenter.IndexX][_selectedPresenter.IndexY - 1];
 			presenter.ActivateDownAnimation();
+			DestroyCells(_selectedPresenter, presenter);
 		}
 		else if (_selectedPresenter.IndexY - 1 >= 0 && CheckCellsFromParallelLineAvailableToMerge
 					(_selectedPresenter.IndexX, _rowsPresenters[_selectedPresenter.IndexY], _rowsPresenters[_selectedPresenter.IndexY - 1]))
@@ -531,6 +536,7 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 			_selectedPresenter.ActivateUpAnimation();
 			var presenter = _columnsPresenters[_selectedPresenter.IndexX][_selectedPresenter.IndexY - 1];
 			presenter.ActivateDownAnimation();
+			DestroyCells(_selectedPresenter, presenter);
 		}
 		else
 		{
@@ -552,6 +558,7 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 			_selectedPresenter.ActivateDownAnimation();
 			var presenter = _columnsPresenters[_selectedPresenter.IndexX][_selectedPresenter.IndexY + 1];
 			presenter.ActivateUpAnimation();
+			DestroyCells(_selectedPresenter, presenter);
 		}
 		else if (_selectedPresenter.IndexY + 1 < _rowsPresenters.Count && CheckCellsFromParallelLineAvailableToMerge
 					(_selectedPresenter.IndexX, _rowsPresenters[_selectedPresenter.IndexY], _rowsPresenters[_selectedPresenter.IndexY + 1]))
@@ -559,6 +566,7 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 			_selectedPresenter.ActivateDownAnimation();
 			var presenter = _columnsPresenters[_selectedPresenter.IndexX][_selectedPresenter.IndexY + 1];
 			presenter.ActivateUpAnimation();
+			DestroyCells(_selectedPresenter, presenter);
 		}
 		else
 		{
@@ -575,6 +583,139 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 
 		_selectedPresenter.SetActiveSelectedAnimation(false);
 		_selectedPresenter = null;
+	}
+
+	private void DestroyCells(CellPresenter firstPresenter, CellPresenter secondPresenter)
+	{
+		if (firstPresenter.IndexX == secondPresenter.IndexX)
+		{
+			var cellsFromFirstRow = _rowsPresenters[firstPresenter.IndexY];
+			var cellsFromSecondRow = _rowsPresenters[secondPresenter.IndexY];
+			var cellsFromColumn = _columnsPresenters[firstPresenter.IndexX];
+
+			List<CellPresenter> cellsFirst = new List<CellPresenter>() { }; //todo: move to fields
+			List<CellPresenter> cellsSecond = new List<CellPresenter>() { }; //todo: move to fields
+			List<CellPresenter> cellsThird = new List<CellPresenter>() { }; //todo: move to fields
+			List<CellPresenter> cellsFourth = new List<CellPresenter>() { }; //todo: move to fields
+
+			var needToDisappearFirstPresenter = false;
+			var needToDisappearSecondPresenter = false;
+
+			for (var i = firstPresenter.IndexX + 1; i < cellsFromFirstRow.Count; i++)
+			{
+				if (cellsFromFirstRow[i].CellType == secondPresenter.CellType)
+					cellsFirst.Add(cellsFromFirstRow[i]);
+				else
+					break;
+			}
+
+			for (var i = firstPresenter.IndexX - 1; i >= 0; i--)
+			{
+				if (cellsFromFirstRow[i].CellType == secondPresenter.CellType)
+					cellsFirst.Add(cellsFromFirstRow[i]);
+				else
+					break;
+			}
+
+			for (var i = secondPresenter.IndexX + 1; i < cellsFromSecondRow.Count; i++)
+			{
+				if (cellsFromSecondRow[i].CellType == firstPresenter.CellType)
+					cellsSecond.Add(cellsFromSecondRow[i]);
+				else
+					break;
+			}
+
+			for (var i = firstPresenter.IndexX - 1; i >= 0; i--)
+			{
+				if (cellsFromSecondRow[i].CellType == firstPresenter.CellType)
+					cellsSecond.Add(cellsFromSecondRow[i]);
+				else
+					break;
+			}
+
+			if (cellsFirst.Count >= 2)
+			{
+				Debug.Log($"destroy cellsFirst");
+				foreach (var presenter in cellsFirst)
+					presenter.ActivateDisappearAnimation();
+
+				needToDisappearSecondPresenter = true;
+			}
+
+			if (cellsSecond.Count >= 2)
+			{
+				Debug.Log($"destroy cellsSecond");
+				foreach (var presenter in cellsSecond)
+					presenter.ActivateDisappearAnimation();
+
+				needToDisappearFirstPresenter = true;
+			}
+
+			Debug.Log($"cellsFirst.Count: {cellsFirst.Count}, cellsSecond.Count: {cellsSecond.Count}");
+
+			if (secondPresenter.IndexY > firstPresenter.IndexY)
+			{
+				for (var i = secondPresenter.IndexY + 1; i < cellsFromColumn.Count; i++)
+				{
+					if (cellsFromColumn[i].CellType == firstPresenter.CellType)
+						cellsThird.Add(cellsFromColumn[i]);
+					else
+						break;
+				}
+
+				for (var i = firstPresenter.IndexY - 1; i >= 0; i--)
+				{
+					if (cellsFromColumn[i].CellType == secondPresenter.CellType)
+						cellsFourth.Add(cellsFromColumn[i]);
+					else
+						break;
+				}
+			}
+			else
+			{
+				for (var i = firstPresenter.IndexY + 1; i < cellsFromColumn.Count; i++)
+				{
+					if (cellsFromColumn[i].CellType == secondPresenter.CellType)
+						cellsFourth.Add(cellsFromColumn[i]);
+					else
+						break;
+				}
+
+				for (var i = secondPresenter.IndexY - 1; i >= 0; i--)
+				{
+					if (cellsFromColumn[i].CellType == firstPresenter.CellType)
+						cellsThird.Add(cellsFromColumn[i]);
+					else
+						break;
+				}
+			}
+
+			if (cellsThird.Count >= 2)
+			{
+				Debug.Log($"destroy cellsThird");
+				foreach (var presenter in cellsThird)
+					presenter.ActivateDisappearAnimation();
+
+				needToDisappearFirstPresenter = true;
+			}
+
+			if (cellsFourth.Count >= 2)
+			{
+				Debug.Log($"destroy cellsFourth");
+				foreach (var presenter in cellsFourth)
+					presenter.ActivateDisappearAnimation();
+
+				needToDisappearSecondPresenter = true;
+			}
+
+			if (needToDisappearFirstPresenter)
+				firstPresenter.ActivateDisappearAnimation();
+
+			if (needToDisappearSecondPresenter)
+				secondPresenter.ActivateDisappearAnimation();
+
+			Debug.Log($"cellsThird.Count: {cellsThird.Count}, cellsFourth.Count: {cellsFourth.Count}");
+		}
 	}
 
 	public override void Dispose()

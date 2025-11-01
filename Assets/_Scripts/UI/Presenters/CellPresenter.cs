@@ -42,9 +42,10 @@ public class CellPresenter : UiPresenter
 			.Pause();
 
 		_disappearAnimation = DOTween.Sequence()
+			.AppendInterval(0.5f)
 			.Append(View.CanvasGroupFruitsRoot.DOFade(0, 1f))
 			.AppendInterval(0.5f)
-			// .AppendCallback(AfterDisappear)
+			.AppendCallback(AfterDisappear)
 			.SetId(this)
 			.SetAutoKill(false)
 			.Pause();
@@ -59,7 +60,6 @@ public class CellPresenter : UiPresenter
 
 		_leftMoveAnimation = DOTween.Sequence()
 			.Append(View.PanelFruitsRoot.DOAnchorPos(new Vector2(-cellWidth, 0f), 0.5f))
-			.Append(View.CanvasGroupFruitsRoot.DOFade(0, 1f))
 			.AppendInterval(0.5f)
 			.AppendCallback(AfterMove)
 			.SetId(this)
@@ -68,7 +68,6 @@ public class CellPresenter : UiPresenter
 
 		_rightMoveAnimation = DOTween.Sequence()
 			.Append(View.PanelFruitsRoot.DOAnchorPos(new Vector2(cellWidth, 0f), 0.5f))
-			.Append(View.CanvasGroupFruitsRoot.DOFade(0, 1f))
 			.AppendInterval(0.5f)
 			.AppendCallback(AfterMove)
 			.SetId(this)
@@ -77,7 +76,6 @@ public class CellPresenter : UiPresenter
 
 		_upMoveAnimation = DOTween.Sequence()
 			.Append(View.PanelFruitsRoot.DOAnchorPos(new Vector2(0f, cellHeight), 0.5f))
-			.Append(View.CanvasGroupFruitsRoot.DOFade(0, 1f))
 			.AppendInterval(0.5f)
 			.AppendCallback(AfterMove)
 			.SetId(this)
@@ -86,7 +84,6 @@ public class CellPresenter : UiPresenter
 
 		_downMoveAnimation = DOTween.Sequence()
 			.Append(View.PanelFruitsRoot.DOAnchorPos(new Vector2(0f, -cellHeight), 0.5f))
-			.Append(View.CanvasGroupFruitsRoot.DOFade(0, 1f))
 			.AppendInterval(0.5f)
 			.AppendCallback(AfterMove)
 			.SetId(this)
@@ -223,6 +220,12 @@ public class CellPresenter : UiPresenter
 			_downBadMoveAnimation.Restart();
 	}
 
+	public void ActivateDisappearAnimation()
+	{
+		if (!HasPlayingMoveAnimation())
+			_disappearAnimation.Restart();
+	}
+
 	private void AfterMove()
 	{
 		_rightMoveAnimation.Rewind();
@@ -239,6 +242,11 @@ public class CellPresenter : UiPresenter
 		_upBadMoveAnimation.Rewind();
 		_downBadMoveAnimation.Rewind();
 		View.PanelFruitsRoot.anchoredPosition = Vector2.zero;
+	}
+
+	private void AfterDisappear()
+	{
+		_disappearAnimation.Rewind();
 	}
 
 	private bool HasPlayingMoveAnimation()
