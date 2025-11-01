@@ -7,7 +7,7 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 {
 	private readonly CellPresenterFactory _cellPresenterFactory;
 	private readonly SignalBus _signalBus;
-	private readonly CompositeDisposable _disposables = new ();
+	private readonly CompositeDisposable _disposables = new();
 	private readonly Dictionary<string, CellPresenter> _allPresenters = new();
 	private readonly Dictionary<int, List<CellPresenter>> _rowsPresenters = new();
 	private readonly Dictionary<int, List<CellPresenter>> _columnsPresenters = new();
@@ -36,11 +36,11 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 		_signalBus.GetStream<SignalPlayerTouchCellData>()
 			.Subscribe(OnSignalPlayerTouchCellData)
 			.AddTo(_disposables);
-		
+
 		_signalBus.GetStream<SignalPlayerTouchProcessData>()
 			.Subscribe(OnSignalPlayerTouchProcessData)
 			.AddTo(_disposables);
-		
+
 		_signalBus.GetStream<SignalResetPlayerInputData>()
 			.Subscribe(OnSignalResetPlayerInputData)
 			.AddTo(_disposables);
@@ -68,7 +68,7 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 
 				var randomCellTypeIndex = Random.Range(0, _cellTypesCount);
 				var randomCellType = (CellTypeEnum) randomCellTypeIndex;
-				cellPresenter.InitCell(isOdd, randomCellType, View.PanelPlate,  View.PanelBackgrounds, x, y);
+				cellPresenter.InitCell(isOdd, randomCellType, View.PanelPlate, View.PanelBackgrounds, x, y);
 				isOdd = !isOdd;
 			}
 
@@ -138,7 +138,8 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 		CheckCellAfterSwitch(additionalIndex, additionalDictionary[indexSecondSubsequent]);
 		CheckCellAfterSwitch(additionalIndex, additionalDictionary[indexThirdSubsequent]);
 
-		Debug.Log($"switch type for {checkList[indexSecondSubsequent].ViewTransform.name} and {checkList[indexThirdSubsequent].ViewTransform.name}.");
+		Debug.Log(
+			$"switch type for {checkList[indexSecondSubsequent].ViewTransform.name} and {checkList[indexThirdSubsequent].ViewTransform.name}.");
 	}
 
 	private void CheckLeftCells(int currentIndex, int additionalIndex, List<CellPresenter> checkList,
@@ -173,7 +174,8 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 		CheckCellAfterSwitch(additionalIndex, additionalDictionary[indexSecondPrevious]);
 		CheckCellAfterSwitch(additionalIndex, additionalDictionary[indexThirdPrevious]);
 
-		Debug.Log($"switch type for {checkList[indexSecondPrevious].ViewTransform.name} and {checkList[indexThirdPrevious].ViewTransform.name}.");
+		Debug.Log(
+			$"switch type for {checkList[indexSecondPrevious].ViewTransform.name} and {checkList[indexThirdPrevious].ViewTransform.name}.");
 	}
 
 	private void CheckCellAfterSwitch(int index, List<CellPresenter> checkList)
@@ -211,7 +213,8 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 	private void SetNewRandomCellType(List<CellPresenter> checkList, int cellIndex)
 	{
 		var newCellType = GetRandomCellType(checkList[cellIndex].CellType);
-		Debug.Log($"switch type from {checkList[cellIndex].CellType} to {newCellType} for {checkList[cellIndex].ViewTransform.name}.");
+		Debug.Log(
+			$"switch type from {checkList[cellIndex].CellType} to {newCellType} for {checkList[cellIndex].ViewTransform.name}.");
 		checkList[cellIndex].SetType(newCellType);
 	}
 
@@ -300,7 +303,7 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 		var isBackIndexesValid = indexFirstPrevious
 			>= 0 && indexSecondPrevious >= 0
 				&& indexThirdPrevious >= 0;
-		
+
 		var isForwardIndexesValid = indexFirstSubsequent < checkList.Count
 									&& indexSecondSubsequent < checkList.Count
 									&& indexFirstPrevious >= 0;
@@ -313,6 +316,69 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 				&& checkList[currentIndex].CellType != checkList[indexFirstPrevious].CellType
 				&& checkList[indexFirstPrevious].CellType == checkList[indexFirstSubsequent].CellType
 				&& checkList[indexFirstPrevious].CellType == checkList[indexSecondSubsequent].CellType;
+	}
+
+	private bool CheckCellsFromParallelLineAvailableToMerge(int currentIndex, List<CellPresenter> checkList,
+		List<CellPresenter> parallelList)
+	{
+		var indexFirstSubsequent = currentIndex + 1;
+		var indexSecondSubsequent = currentIndex + 2;
+		var indexFirstPrevious = currentIndex - 1;
+		var indexSecondPrevious = currentIndex - 2;
+
+		var isNearestOnCheckIndexesValid = indexFirstPrevious >= 0 && indexFirstSubsequent < checkList.Count;
+		var isNearestOnParallelIndexesValid = indexFirstPrevious >= 0 && indexFirstSubsequent < parallelList.Count;
+		
+		var isBackIndexesValid =
+			indexFirstPrevious >= 0 && indexSecondPrevious >= 0;
+		
+		var isForwardOnCheckIndexesValid =
+			indexFirstSubsequent < checkList.Count && indexSecondSubsequent < checkList.Count;
+		
+		var isForwardOnParallelIndexesValid =
+			indexFirstSubsequent < parallelList.Count && indexSecondSubsequent < parallelList.Count;
+
+		var isMergePossible = isNearestOnCheckIndexesValid
+							&& checkList[currentIndex].CellType != parallelList[currentIndex].CellType
+							&& checkList[currentIndex].CellType == parallelList[indexFirstSubsequent].CellType
+							&& checkList[currentIndex].CellType == parallelList[indexFirstPrevious].CellType;
+
+		if (isMergePossible)
+			return true;
+
+		isMergePossible = isNearestOnParallelIndexesValid
+						&& checkList[currentIndex].CellType != parallelList[currentIndex].CellType
+						&& parallelList[currentIndex].CellType == checkList[indexFirstSubsequent].CellType
+						&& parallelList[currentIndex].CellType == checkList[indexFirstPrevious].CellType;
+
+		if (isMergePossible)
+			return true;
+
+		isMergePossible = isBackIndexesValid
+						&& (checkList[currentIndex].CellType != parallelList[currentIndex].CellType
+							&& parallelList[currentIndex].CellType == checkList[indexFirstPrevious].CellType
+							&& parallelList[currentIndex].CellType == checkList[indexSecondPrevious].CellType
+							|| checkList[currentIndex].CellType != parallelList[currentIndex].CellType
+							&& parallelList[currentIndex].CellType == checkList[indexFirstPrevious].CellType
+							&& parallelList[currentIndex].CellType == checkList[indexSecondPrevious].CellType);
+
+		if (isMergePossible)
+			return true;
+
+		isMergePossible = isForwardOnCheckIndexesValid
+						&& checkList[currentIndex].CellType != parallelList[currentIndex].CellType
+						&& checkList[currentIndex].CellType == parallelList[indexFirstSubsequent].CellType
+						&& checkList[currentIndex].CellType == parallelList[indexSecondSubsequent].CellType;
+
+		if (isMergePossible)
+			return true;
+
+		isMergePossible = isForwardOnParallelIndexesValid
+						&& checkList[currentIndex].CellType != parallelList[currentIndex].CellType
+						&& parallelList[currentIndex].CellType == checkList[indexFirstSubsequent].CellType
+						&& parallelList[currentIndex].CellType == checkList[indexSecondSubsequent].CellType;
+
+		return isMergePossible;
 	}
 
 	#endregion
@@ -346,7 +412,8 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 			{
 				CheckUpSideCells();
 			}
-		} else if (dotProductRight < 0 && dotProductUp < 0)
+		}
+		else if (dotProductRight < 0 && dotProductUp < 0)
 		{
 			//left side
 			if (dotProductRight < dotProductUp)
@@ -358,7 +425,8 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 			{
 				CheckDownSideCells();
 			}
-		} else if (dotProductRight < 0 && dotProductUp > 0)
+		}
+		else if (dotProductRight < 0 && dotProductUp > 0)
 		{
 			//left side
 			if (Mathf.Abs(dotProductRight) > dotProductUp)
@@ -370,7 +438,8 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 			{
 				CheckUpSideCells();
 			}
-		} else if (dotProductRight > 0 && dotProductUp < 0)
+		}
+		else if (dotProductRight > 0 && dotProductUp < 0)
 		{
 			//right side
 			if (dotProductRight > Mathf.Abs(dotProductUp))
@@ -401,9 +470,18 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 			var presenter = _rowsPresenters[_selectedPresenter.IndexY][_selectedPresenter.IndexX + 1];
 			presenter.ActivateLeftAnimation();
 		}
+		else if (_selectedPresenter.IndexX + 1 < _columnsPresenters.Count && CheckCellsFromParallelLineAvailableToMerge
+					(_selectedPresenter.IndexY, _columnsPresenters[_selectedPresenter.IndexX], _columnsPresenters[_selectedPresenter.IndexX + 1]))
+		{
+			_selectedPresenter.ActivateRightAnimation();
+			var presenter = _rowsPresenters[_selectedPresenter.IndexY][_selectedPresenter.IndexX + 1];
+			presenter.ActivateLeftAnimation();
+		}
 		else
 		{
 			_selectedPresenter.ActivateRightBadAnimation();
+			var presenter = _rowsPresenters[_selectedPresenter.IndexY][_selectedPresenter.IndexX + 1];
+			presenter.ActivateLeftBadAnimation();
 		}
 	}
 
@@ -419,9 +497,18 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 			var presenter = _rowsPresenters[_selectedPresenter.IndexY][_selectedPresenter.IndexX - 1];
 			presenter.ActivateRightAnimation();
 		}
+		else if (_selectedPresenter.IndexX - 1 >= 0 && CheckCellsFromParallelLineAvailableToMerge
+					(_selectedPresenter.IndexY, _columnsPresenters[_selectedPresenter.IndexX], _columnsPresenters[_selectedPresenter.IndexX - 1]))
+		{
+			_selectedPresenter.ActivateLeftAnimation();
+			var presenter = _rowsPresenters[_selectedPresenter.IndexY][_selectedPresenter.IndexX - 1];
+			presenter.ActivateRightAnimation();
+		}
 		else
 		{
 			_selectedPresenter.ActivateLeftBadAnimation();
+			var presenter = _rowsPresenters[_selectedPresenter.IndexY][_selectedPresenter.IndexX - 1];
+			presenter.ActivateRightBadAnimation();
 		}
 	}
 
@@ -431,7 +518,15 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 		{
 			_selectedPresenter.ActivateBadWayAnimation();
 		}
-		else if (CheckLeftCellsAvailableToMerge(_selectedPresenter.IndexY, _columnsPresenters[_selectedPresenter.IndexX]))
+		else if (CheckLeftCellsAvailableToMerge(_selectedPresenter.IndexY,
+					_columnsPresenters[_selectedPresenter.IndexX]))
+		{
+			_selectedPresenter.ActivateUpAnimation();
+			var presenter = _columnsPresenters[_selectedPresenter.IndexX][_selectedPresenter.IndexY - 1];
+			presenter.ActivateDownAnimation();
+		}
+		else if (_selectedPresenter.IndexY - 1 >= 0 && CheckCellsFromParallelLineAvailableToMerge
+					(_selectedPresenter.IndexX, _rowsPresenters[_selectedPresenter.IndexY], _rowsPresenters[_selectedPresenter.IndexY - 1]))
 		{
 			_selectedPresenter.ActivateUpAnimation();
 			var presenter = _columnsPresenters[_selectedPresenter.IndexX][_selectedPresenter.IndexY - 1];
@@ -440,6 +535,8 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 		else
 		{
 			_selectedPresenter.ActivateUpBadAnimation();
+			var presenter = _columnsPresenters[_selectedPresenter.IndexX][_selectedPresenter.IndexY - 1];
+			presenter.ActivateDownBadAnimation();
 		}
 	}
 
@@ -449,7 +546,15 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 		{
 			_selectedPresenter.ActivateBadWayAnimation();
 		}
-		else if (CheckRightCellsAvailableToMerge(_selectedPresenter.IndexY, _columnsPresenters[_selectedPresenter.IndexX]))
+		else if (CheckRightCellsAvailableToMerge(_selectedPresenter.IndexY,
+					_columnsPresenters[_selectedPresenter.IndexX]))
+		{
+			_selectedPresenter.ActivateDownAnimation();
+			var presenter = _columnsPresenters[_selectedPresenter.IndexX][_selectedPresenter.IndexY + 1];
+			presenter.ActivateUpAnimation();
+		}
+		else if (_selectedPresenter.IndexY + 1 < _rowsPresenters.Count && CheckCellsFromParallelLineAvailableToMerge
+					(_selectedPresenter.IndexX, _rowsPresenters[_selectedPresenter.IndexY], _rowsPresenters[_selectedPresenter.IndexY + 1]))
 		{
 			_selectedPresenter.ActivateDownAnimation();
 			var presenter = _columnsPresenters[_selectedPresenter.IndexX][_selectedPresenter.IndexY + 1];
@@ -458,6 +563,8 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 		else
 		{
 			_selectedPresenter.ActivateDownBadAnimation();
+			var presenter = _columnsPresenters[_selectedPresenter.IndexX][_selectedPresenter.IndexY + 1];
+			presenter.ActivateUpBadAnimation();
 		}
 	}
 
