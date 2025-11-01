@@ -222,12 +222,14 @@ public class CellPresenter : UiPresenter
 
 	public void ActivateDisappearAnimation()
 	{
-		if (!HasPlayingMoveAnimation())
 			_disappearAnimation.Restart();
 	}
 
 	private void AfterMove()
 	{
+		if (_disappearAnimation.IsPlaying())
+			return;
+		
 		_rightMoveAnimation.Rewind();
 		_leftMoveAnimation.Rewind();
 		_upMoveAnimation.Rewind();
@@ -247,6 +249,12 @@ public class CellPresenter : UiPresenter
 	private void AfterDisappear()
 	{
 		_disappearAnimation.Rewind();
+			
+		_rightMoveAnimation.Rewind();
+		_leftMoveAnimation.Rewind();
+		_upMoveAnimation.Rewind();
+		_downMoveAnimation.Rewind();
+		View.PanelFruitsRoot.anchoredPosition = Vector2.zero;
 	}
 
 	private bool HasPlayingMoveAnimation()
