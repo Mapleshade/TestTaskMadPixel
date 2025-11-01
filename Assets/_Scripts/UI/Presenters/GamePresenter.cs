@@ -611,7 +611,7 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 			var cellsFromSecondRow = _rowsPresenters[secondPresenter.IndexY];
 			var cellsFromColumn = _columnsPresenters[firstPresenter.IndexX];
 
-			CheckLines(cellsFromFirstRow, cellsFromSecondRow, cellsFromColumn,
+			SelectCellsForDestroying(cellsFromFirstRow, cellsFromSecondRow, cellsFromColumn,
 				firstPresenter.IndexX, secondPresenter.IndexX,
 				firstPresenter.IndexY, secondPresenter.IndexY,
 				firstPresenter.CellType, secondPresenter.CellType);
@@ -623,7 +623,7 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 			var cellsFromSecondColumn = _columnsPresenters[secondPresenter.IndexX];
 			var cellsFromRow = _rowsPresenters[firstPresenter.IndexY];
 
-			CheckLines(cellsFromFirstColumn, cellsFromSecondColumn, cellsFromRow,
+			SelectCellsForDestroying(cellsFromFirstColumn, cellsFromSecondColumn, cellsFromRow,
 				firstPresenter.IndexY, secondPresenter.IndexY,
 				firstPresenter.IndexX, secondPresenter.IndexX,
 				firstPresenter.CellType, secondPresenter.CellType);
@@ -647,8 +647,6 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 			needToDisappearFirstPresenter = true;
 		}
 
-		Debug.Log($"cellsFirst.Count: {_firstCellsBuffer.Count}, cellsSecond.Count: {_secondCellsBuffer.Count}");
-
 		if (_thirdCellsBuffer.Count >= 2)
 		{
 			Debug.Log($"destroy cellsThird");
@@ -667,7 +665,8 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 			needToDisappearSecondPresenter = true;
 		}
 
-		Debug.Log($"cellsThird.Count: {_thirdCellsBuffer.Count}, cellsFourth.Count: {_fourthCellsBuffer.Count}");
+		Debug.Log($"cellsFirst.Count: {_firstCellsBuffer.Count}, cellsSecond.Count: {_secondCellsBuffer.Count}, " +
+				$"cellsThird.Count: {_thirdCellsBuffer.Count}, cellsFourth.Count: {_fourthCellsBuffer.Count}");
 		if (needToDisappearFirstPresenter)
 			firstPresenter.ActivateDisappearAnimation();
 
@@ -675,7 +674,7 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 			secondPresenter.ActivateDisappearAnimation();
 	}
 
-	private void CheckLines
+	private void SelectCellsForDestroying
 	(List<CellPresenter> firstParallelLineCells,
 		List<CellPresenter> secondParallelLineCells,
 		List<CellPresenter> perpendicularLineCells,
