@@ -11,6 +11,12 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 	private readonly Dictionary<string, CellPresenter> _allPresenters = new();
 	private readonly Dictionary<int, List<CellPresenter>> _rowsPresenters = new();
 	private readonly Dictionary<int, List<CellPresenter>> _columnsPresenters = new();
+
+	private readonly List<CellPresenter> _firstCellsBuffer = new();
+	private readonly List<CellPresenter> _secondCellsBuffer = new();
+	private readonly List<CellPresenter> _thirdCellsBuffer = new();
+	private readonly List<CellPresenter> _fourthCellsBuffer = new();
+	
 	private readonly int _cellTypesCount;
 	private CellPresenter _selectedPresenter;
 
@@ -587,16 +593,16 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 
 	private void DestroyCells(CellPresenter firstPresenter, CellPresenter secondPresenter)
 	{
+		_firstCellsBuffer.Clear();
+		_secondCellsBuffer.Clear();
+		_thirdCellsBuffer.Clear();
+		_fourthCellsBuffer.Clear();
+
 		if (firstPresenter.IndexX == secondPresenter.IndexX)
 		{
 			var cellsFromFirstRow = _rowsPresenters[firstPresenter.IndexY];
 			var cellsFromSecondRow = _rowsPresenters[secondPresenter.IndexY];
 			var cellsFromColumn = _columnsPresenters[firstPresenter.IndexX];
-
-			List<CellPresenter> cellsFirst = new List<CellPresenter>() { }; //todo: move to fields
-			List<CellPresenter> cellsSecond = new List<CellPresenter>() { }; //todo: move to fields
-			List<CellPresenter> cellsThird = new List<CellPresenter>() { }; //todo: move to fields
-			List<CellPresenter> cellsFourth = new List<CellPresenter>() { }; //todo: move to fields
 
 			var needToDisappearFirstPresenter = false;
 			var needToDisappearSecondPresenter = false;
@@ -604,7 +610,7 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 			for (var i = firstPresenter.IndexX + 1; i < cellsFromFirstRow.Count; i++)
 			{
 				if (cellsFromFirstRow[i].CellType == secondPresenter.CellType)
-					cellsFirst.Add(cellsFromFirstRow[i]);
+					_firstCellsBuffer.Add(cellsFromFirstRow[i]);
 				else
 					break;
 			}
@@ -612,7 +618,7 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 			for (var i = firstPresenter.IndexX - 1; i >= 0; i--)
 			{
 				if (cellsFromFirstRow[i].CellType == secondPresenter.CellType)
-					cellsFirst.Add(cellsFromFirstRow[i]);
+					_firstCellsBuffer.Add(cellsFromFirstRow[i]);
 				else
 					break;
 			}
@@ -620,7 +626,7 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 			for (var i = secondPresenter.IndexX + 1; i < cellsFromSecondRow.Count; i++)
 			{
 				if (cellsFromSecondRow[i].CellType == firstPresenter.CellType)
-					cellsSecond.Add(cellsFromSecondRow[i]);
+					_secondCellsBuffer.Add(cellsFromSecondRow[i]);
 				else
 					break;
 			}
@@ -628,37 +634,37 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 			for (var i = firstPresenter.IndexX - 1; i >= 0; i--)
 			{
 				if (cellsFromSecondRow[i].CellType == firstPresenter.CellType)
-					cellsSecond.Add(cellsFromSecondRow[i]);
+					_secondCellsBuffer.Add(cellsFromSecondRow[i]);
 				else
 					break;
 			}
 
-			if (cellsFirst.Count >= 2)
+			if (_firstCellsBuffer.Count >= 2)
 			{
 				Debug.Log($"destroy cellsFirst");
-				foreach (var presenter in cellsFirst)
+				foreach (var presenter in _firstCellsBuffer)
 					presenter.ActivateDisappearAnimation();
 
 				needToDisappearSecondPresenter = true;
 			}
 
-			if (cellsSecond.Count >= 2)
+			if (_secondCellsBuffer.Count >= 2)
 			{
 				Debug.Log($"destroy cellsSecond");
-				foreach (var presenter in cellsSecond)
+				foreach (var presenter in _secondCellsBuffer)
 					presenter.ActivateDisappearAnimation();
 
 				needToDisappearFirstPresenter = true;
 			}
 
-			Debug.Log($"cellsFirst.Count: {cellsFirst.Count}, cellsSecond.Count: {cellsSecond.Count}");
+			Debug.Log($"cellsFirst.Count: {_firstCellsBuffer.Count}, cellsSecond.Count: {_secondCellsBuffer.Count}");
 
 			if (secondPresenter.IndexY > firstPresenter.IndexY)
 			{
 				for (var i = secondPresenter.IndexY + 1; i < cellsFromColumn.Count; i++)
 				{
 					if (cellsFromColumn[i].CellType == firstPresenter.CellType)
-						cellsThird.Add(cellsFromColumn[i]);
+						_thirdCellsBuffer.Add(cellsFromColumn[i]);
 					else
 						break;
 				}
@@ -666,7 +672,7 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 				for (var i = firstPresenter.IndexY - 1; i >= 0; i--)
 				{
 					if (cellsFromColumn[i].CellType == secondPresenter.CellType)
-						cellsFourth.Add(cellsFromColumn[i]);
+						_fourthCellsBuffer.Add(cellsFromColumn[i]);
 					else
 						break;
 				}
@@ -676,7 +682,7 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 				for (var i = firstPresenter.IndexY + 1; i < cellsFromColumn.Count; i++)
 				{
 					if (cellsFromColumn[i].CellType == secondPresenter.CellType)
-						cellsFourth.Add(cellsFromColumn[i]);
+						_fourthCellsBuffer.Add(cellsFromColumn[i]);
 					else
 						break;
 				}
@@ -684,25 +690,25 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 				for (var i = secondPresenter.IndexY - 1; i >= 0; i--)
 				{
 					if (cellsFromColumn[i].CellType == firstPresenter.CellType)
-						cellsThird.Add(cellsFromColumn[i]);
+						_thirdCellsBuffer.Add(cellsFromColumn[i]);
 					else
 						break;
 				}
 			}
 
-			if (cellsThird.Count >= 2)
+			if (_thirdCellsBuffer.Count >= 2)
 			{
 				Debug.Log($"destroy cellsThird");
-				foreach (var presenter in cellsThird)
+				foreach (var presenter in _thirdCellsBuffer)
 					presenter.ActivateDisappearAnimation();
 
 				needToDisappearFirstPresenter = true;
 			}
 
-			if (cellsFourth.Count >= 2)
+			if (_fourthCellsBuffer.Count >= 2)
 			{
 				Debug.Log($"destroy cellsFourth");
-				foreach (var presenter in cellsFourth)
+				foreach (var presenter in _fourthCellsBuffer)
 					presenter.ActivateDisappearAnimation();
 
 				needToDisappearSecondPresenter = true;
@@ -714,7 +720,7 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 			if (needToDisappearSecondPresenter)
 				secondPresenter.ActivateDisappearAnimation();
 
-			Debug.Log($"cellsThird.Count: {cellsThird.Count}, cellsFourth.Count: {cellsFourth.Count}");
+			Debug.Log($"cellsThird.Count: {_thirdCellsBuffer.Count}, cellsFourth.Count: {_fourthCellsBuffer.Count}");
 		}
 	}
 
