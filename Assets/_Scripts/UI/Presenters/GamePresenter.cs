@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using DG.Tweening;
 using UniRx;
 using UnityEngine;
 using Zenject;
@@ -18,7 +19,9 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 	private readonly List<CellPresenter> _fourthCellsBuffer = new();
 
 	private readonly int _cellTypesCount;
+	private readonly Tween _timerForBlockPlate;
 	private CellPresenter _selectedPresenter;
+	private bool _isPlateAvailable = true;
 
 	public GamePresenter(ViewGame view,
 		CellPresenterFactory cellPresenterFactory,
@@ -33,6 +36,18 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 
 		for (var i = 0; i < Utils.PlateSizeX; i++)
 			_columnsPresenters.Add(i, new List<CellPresenter>());
+
+		_timerForBlockPlate = DOVirtual
+			.DelayedCall(1.5f, OnEndTimerForBlockPlate)
+			.SetAutoKill(false)
+			.SetId(this)
+			.Pause();
+	}
+
+	private void OnEndTimerForBlockPlate()
+	{
+		_isPlateAvailable = true;
+		ResetPlayerInput();
 	}
 
 	public override void Initialize()
@@ -403,9 +418,13 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 		if (_selectedPresenter == null)
 			return;
 
+		if (!_isPlateAvailable)
+			return;
+
 		var dotProductRight = Vector3.Dot(signalData.DirectionVector, Vector2.right);
 		var dotProductUp = Vector3.Dot(signalData.DirectionVector, Vector2.up);
 
+		var isAnimationsStarted = true;
 		if (dotProductRight > 0 && dotProductUp > 0)
 		{
 			//right side
@@ -461,7 +480,14 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 		//staying on one place
 		else
 		{
+			isAnimationsStarted = false;
 		}
+
+		if (!isAnimationsStarted)
+			return;
+
+		_isPlateAvailable = false;
+		_timerForBlockPlate.Restart();
 	}
 
 	private void CheckRightSideCells()
@@ -587,6 +613,11 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 	}
 
 	private void OnSignalResetPlayerInputData(SignalResetPlayerInputData signalData)
+	{
+		ResetPlayerInput();
+	}
+
+	private void ResetPlayerInput()
 	{
 		if (_selectedPresenter == null)
 			return;
@@ -760,6 +791,7 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 		base.Dispose();
 
 		_disposables.Dispose();
+		DOTween.Kill(this);
 
 		foreach (var cellPresenter in _allPresenters)
 			cellPresenter.Value.Dispose();
