@@ -158,8 +158,8 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 			var secondCellType = checkList[indexSecondSubsequent].CellType;
 			var thirdCellType = checkList[indexThirdSubsequent].CellType;
 
-			checkList[indexSecondSubsequent].SetType(thirdCellType);
-			checkList[indexThirdSubsequent].SetType(secondCellType);
+			checkList[indexSecondSubsequent].SetType(thirdCellType, true);
+			checkList[indexThirdSubsequent].SetType(secondCellType, true);
 		}
 
 		CheckCellAfterSwitch(additionalIndex, additionalDictionary[indexSecondSubsequent]);
@@ -194,8 +194,8 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 			var secondCellType = checkList[indexSecondPrevious].CellType;
 			var thirdCellType = checkList[indexThirdPrevious].CellType;
 
-			checkList[indexSecondPrevious].SetType(thirdCellType);
-			checkList[indexThirdPrevious].SetType(secondCellType);
+			checkList[indexSecondPrevious].SetType(thirdCellType, true);
+			checkList[indexThirdPrevious].SetType(secondCellType, true);
 		}
 
 		CheckCellAfterSwitch(additionalIndex, additionalDictionary[indexSecondPrevious]);
@@ -242,7 +242,7 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 		var newCellType = GetRandomCellType(checkList[cellIndex].CellType);
 		Debug.Log(
 			$"switch type from {checkList[cellIndex].CellType} to {newCellType} for {checkList[cellIndex].ViewTransform.name}.");
-		checkList[cellIndex].SetType(newCellType);
+		checkList[cellIndex].SetType(newCellType, true);
 	}
 
 	#endregion
@@ -507,8 +507,9 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 			_selectedPresenter.ActivateRightAnimation();
 			var presenter = _rowsPresenters[_selectedPresenter.IndexY][_selectedPresenter.IndexX + 1];
 			presenter.ActivateLeftAnimation();
-			_selectedPresenter.SetCachedNewType(presenter.CellType, false);
-			presenter.SetCachedNewType(_selectedPresenter.CellType, false);
+			var tempCellType = _selectedPresenter.CellType;
+			_selectedPresenter.SetType(presenter.CellType, false);
+			presenter.SetType(tempCellType, false);
 			DestroyCells(_selectedPresenter, presenter);
 		}
 		else if (_selectedPresenter.IndexX + 1 < _columnsPresenters.Count && CheckCellsFromParallelLineAvailableToMerge
@@ -518,8 +519,9 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 			_selectedPresenter.ActivateRightAnimation();
 			var presenter = _rowsPresenters[_selectedPresenter.IndexY][_selectedPresenter.IndexX + 1];
 			presenter.ActivateLeftAnimation();
-			_selectedPresenter.SetCachedNewType(presenter.CellType, false);
-			presenter.SetCachedNewType(_selectedPresenter.CellType, false);
+			var tempCellType = _selectedPresenter.CellType;
+			_selectedPresenter.SetType(presenter.CellType, false);
+			presenter.SetType(tempCellType, false);
 			DestroyCells(_selectedPresenter, presenter);
 		}
 		else
@@ -541,8 +543,9 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 			_selectedPresenter.ActivateLeftAnimation();
 			var presenter = _rowsPresenters[_selectedPresenter.IndexY][_selectedPresenter.IndexX - 1];
 			presenter.ActivateRightAnimation();
-			_selectedPresenter.SetCachedNewType(presenter.CellType, false);
-			presenter.SetCachedNewType(_selectedPresenter.CellType, false);
+			var tempCellType = _selectedPresenter.CellType;
+			_selectedPresenter.SetType(presenter.CellType, false);
+			presenter.SetType(tempCellType, false);
 			DestroyCells(_selectedPresenter, presenter);
 		}
 		else if (_selectedPresenter.IndexX - 1 >= 0 && CheckCellsFromParallelLineAvailableToMerge
@@ -552,8 +555,9 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 			_selectedPresenter.ActivateLeftAnimation();
 			var presenter = _rowsPresenters[_selectedPresenter.IndexY][_selectedPresenter.IndexX - 1];
 			presenter.ActivateRightAnimation();
-			_selectedPresenter.SetCachedNewType(presenter.CellType, false);
-			presenter.SetCachedNewType(_selectedPresenter.CellType, false);
+			var tempCellType = _selectedPresenter.CellType;
+			_selectedPresenter.SetType(presenter.CellType, false);
+			presenter.SetType(tempCellType, false);
 			DestroyCells(_selectedPresenter, presenter);
 		}
 		else
@@ -576,8 +580,9 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 			_selectedPresenter.ActivateUpAnimation();
 			var presenter = _columnsPresenters[_selectedPresenter.IndexX][_selectedPresenter.IndexY - 1];
 			presenter.ActivateDownAnimation();
-			_selectedPresenter.SetCachedNewType(presenter.CellType, false);
-			presenter.SetCachedNewType(_selectedPresenter.CellType, false);
+			var tempCellType = _selectedPresenter.CellType;
+			_selectedPresenter.SetType(presenter.CellType, false);
+			presenter.SetType(tempCellType, false);
 
 			DestroyCells(_selectedPresenter, presenter);
 		}
@@ -588,8 +593,9 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 			_selectedPresenter.ActivateUpAnimation();
 			var presenter = _columnsPresenters[_selectedPresenter.IndexX][_selectedPresenter.IndexY - 1];
 			presenter.ActivateDownAnimation();
-			_selectedPresenter.SetCachedNewType(presenter.CellType, false);
-			presenter.SetCachedNewType(_selectedPresenter.CellType, false);
+			var tempCellType = _selectedPresenter.CellType;
+			_selectedPresenter.SetType(presenter.CellType, false);
+			presenter.SetType(tempCellType, false);
 			DestroyCells(_selectedPresenter, presenter);
 		}
 		else
@@ -612,8 +618,9 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 			_selectedPresenter.ActivateDownAnimation();
 			var presenter = _columnsPresenters[_selectedPresenter.IndexX][_selectedPresenter.IndexY + 1];
 			presenter.ActivateUpAnimation();
-			_selectedPresenter.SetCachedNewType(presenter.CellType, false);
-			presenter.SetCachedNewType(_selectedPresenter.CellType, false);
+			var tempCellType = _selectedPresenter.CellType;
+			_selectedPresenter.SetType(presenter.CellType, false);
+			presenter.SetType(tempCellType, false);
 			DestroyCells(_selectedPresenter, presenter);
 		}
 		else if (_selectedPresenter.IndexY + 1 < _rowsPresenters.Count && CheckCellsFromParallelLineAvailableToMerge
@@ -623,8 +630,9 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 			_selectedPresenter.ActivateDownAnimation();
 			var presenter = _columnsPresenters[_selectedPresenter.IndexX][_selectedPresenter.IndexY + 1];
 			presenter.ActivateUpAnimation();
-			_selectedPresenter.SetCachedNewType(presenter.CellType, false);
-			presenter.SetCachedNewType(_selectedPresenter.CellType, false);
+			var tempCellType = _selectedPresenter.CellType;
+			_selectedPresenter.SetType(presenter.CellType, false);
+			presenter.SetType(tempCellType, false);
 			DestroyCells(_selectedPresenter, presenter);
 		}
 		else
@@ -669,7 +677,7 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 			SelectCellsForDestroying(cellsFromFirstRow, cellsFromSecondRow, cellsFromColumn,
 				firstPresenter.IndexX, secondPresenter.IndexX,
 				firstPresenter.IndexY, secondPresenter.IndexY,
-				firstPresenter.CellType, secondPresenter.CellType);
+				secondPresenter.CellType, firstPresenter.CellType);
 		}
 
 		if (firstPresenter.IndexY == secondPresenter.IndexY)
@@ -681,7 +689,7 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 			SelectCellsForDestroying(cellsFromFirstColumn, cellsFromSecondColumn, cellsFromRow,
 				firstPresenter.IndexY, secondPresenter.IndexY,
 				firstPresenter.IndexX, secondPresenter.IndexX,
-				firstPresenter.CellType, secondPresenter.CellType);
+				secondPresenter.CellType, firstPresenter.CellType);
 		}
 
 		if (_firstCellsBuffer.Count >= 2)

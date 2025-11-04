@@ -18,8 +18,6 @@ public class CellPresenter : UiPresenter
 	// private readonly Tween _dropNewTypeAnimation;
 	// private readonly Tween _dropNewTypeWithFadeAnimation;
 	private ViewCellRoot View { get; }
-	private CellTypeEnum _cachedNewCellType;
-	// private int _cachedDestroyedCellsCount;
 	public CellTypeEnum CellType { get; private set; }
 	public Transform ViewTransform => View.transform;
 	public int IndexX { get; private set; }
@@ -157,36 +155,21 @@ public class CellPresenter : UiPresenter
 			#endregion
 	}
 
-	public void SetType(CellTypeEnum cellType)
+	public void SetType(CellTypeEnum cellType, bool updateView)
 	{
 		CellType = cellType;
-
-		foreach (var cellTypeData in View.ImagesCellType)
-			cellTypeData.PanelImage.CheckSetActive(cellTypeData.CellType == cellType);
+		
+		if (updateView)
+			UpdateView();
 	}
 
-	public void SetCachedNewType(CellTypeEnum cellType, bool isRandom)
+	private void UpdateView()
 	{
-		_cachedNewCellType = cellType;
-		// _cachedDestroyedCellsCount = destroyedCellsCount;
-		Debug.Log($"SetCachedNewType X: {IndexX}, Y: {IndexY}, old: {CellType}, new: {_cachedNewCellType}, isRandom: {isRandom}");
-		
-		if (_disappearAnimation.IsPlaying()
-			|| HasPlayingMoveAnimation())
-			return;
+		View.CanvasGroupFruitsRoot.alpha = 1f;
+		View.PanelFruitsRoot.anchoredPosition = Vector2.zero;
 
-		// var rootSizeDelta = View.PaneRoot.sizeDelta;
-		// var cellWidth = rootSizeDelta.x;
-		// var cellHeight = rootSizeDelta.y;
-		//
-		// DOTween.Sequence()
-		// 	.AppendInterval(1f)
-		// 	.AppendCallback(()=> {SetType(_cachedNewCellType);})
-		// 	.Append(View.PanelFruitsRoot.DOAnchorPos(new Vector2(0f, _cachedDestroyedCellsCount * cellHeight), 0f))
-		// 	.Join(View.CanvasGroupFruitsRoot.DOFade(0, 0f))
-		// 	.Append(View.PanelFruitsRoot.DOAnchorPos(new Vector2(0f, 0f), 0.5f))
-		// 	.Join(View.CanvasGroupFruitsRoot.DOFade(1f, 0.5f))
-		// 	.AppendCallback(AfterDropNewType);
+		foreach (var cellTypeData in View.ImagesCellType)
+			cellTypeData.PanelImage.CheckSetActive(cellTypeData.CellType == CellType);
 	}
 
 	public void InitCell(bool isLight, CellTypeEnum cellType, Transform parentTransform, Transform parentForBackgroundsTransform, int indexX, int indexY)
@@ -197,7 +180,7 @@ public class CellPresenter : UiPresenter
 		View.PanelBackgroundsRoot.localScale = Vector3.one;
 		View.ImagesCellBackground[0].PanelBackground.CheckSetActive(isLight);
 		View.ImagesCellBackground[1].PanelBackground.CheckSetActive(!isLight);
-		SetType(cellType);
+		SetType(cellType, true);
 		IndexX = indexX;
 		IndexY = indexY;
 	}
@@ -283,8 +266,9 @@ public class CellPresenter : UiPresenter
 		_leftMoveAnimation.Rewind();
 		_upMoveAnimation.Rewind();
 		_downMoveAnimation.Rewind();
-		View.PanelFruitsRoot.anchoredPosition = Vector2.zero;
-		SetType(_cachedNewCellType);
+
+		if (!_disappearAnimation.IsPlaying())
+			UpdateView();
 	}
 
 	private void AfterBadMove()
@@ -293,13 +277,15 @@ public class CellPresenter : UiPresenter
 		_leftBadMoveAnimation.Rewind();
 		_upBadMoveAnimation.Rewind();
 		_downBadMoveAnimation.Rewind();
-		View.PanelFruitsRoot.anchoredPosition = Vector2.zero;
+
+		UpdateView();
 	}
 
 	private void AfterDisappear()
 	{
 		_disappearAnimation.Rewind();
-		View.CanvasGroupFruitsRoot.alpha = 1f;
+
+		UpdateView();
 	}
 
 	// private void ActivateDropAnimation()
