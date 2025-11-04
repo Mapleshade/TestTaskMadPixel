@@ -1,9 +1,11 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using DG.Tweening;
 using UniRx;
 using UnityEngine;
 using Zenject;
+using Random = UnityEngine.Random;
 
 public class GamePresenter : BaseUIPresenter<ViewGame>
 {
@@ -14,15 +16,14 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 	private readonly Dictionary<int, List<CellPresenter>> _rowsPresenters = new();
 	private readonly Dictionary<int, List<CellPresenter>> _columnsPresenters = new();
 	private readonly Dictionary<int, List<CellPresenter>> _affectedColumns = new();
+	private readonly CellPresenter[,] _gameBoard;
 
-	private readonly List<CellPresenter> _firstCellsBuffer = new();
-	private readonly List<CellPresenter> _secondCellsBuffer = new();
-	private readonly List<CellPresenter> _thirdCellsBuffer = new();
-	private readonly List<CellPresenter> _fourthCellsBuffer = new();
-	private readonly List<CellPresenter> _generalCellsBuffer = new();
+	private readonly List<CellPresenter> _matchesBuffer = new();
+	private readonly List<CellPresenter> _matchPositionsBuffer = new();
 
 	private readonly int _cellTypesCount;
 	private readonly Tween _timerForBlockPlate;
+	private readonly Tween _timerWaitingAnimations;
 	private CellPresenter _selectedPresenter;
 	private bool _isPlateAvailable = true;
 
@@ -43,8 +44,16 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 		for (var i = 0; i < Utils.PlateSizeX; i++)
 			_affectedColumns.Add(i, new List<CellPresenter>());
 
+		_gameBoard = new CellPresenter[Utils.PlateSizeX, Utils.PlateSizeY];
+
 		_timerForBlockPlate = DOVirtual
 			.DelayedCall(1.5f, OnEndTimerForBlockPlate)
+			.SetAutoKill(false)
+			.SetId(this)
+			.Pause();
+
+		_timerWaitingAnimations = DOVirtual
+			.DelayedCall(1f, OnEndTimerWaitingDisappearAnimations)
 			.SetAutoKill(false)
 			.SetId(this)
 			.Pause();
@@ -54,6 +63,11 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 	{
 		_isPlateAvailable = true;
 		ResetPlayerInput();
+	}
+
+	private void OnEndTimerWaitingDisappearAnimations()
+	{
+		DropCells();
 	}
 
 	public override void Initialize()
@@ -92,6 +106,7 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 				_allPresenters.Add(cellName, cellPresenter);
 				_rowsPresenters[y].Add(cellPresenter);
 				_columnsPresenters[x].Add(cellPresenter);
+				_gameBoard[x, y] = cellPresenter;
 
 				var randomCellTypeIndex = Random.Range(0, _cellTypesCount);
 				var randomCellType = (CellTypeEnum) randomCellTypeIndex;
@@ -598,7 +613,19 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 		var tempCellType = _selectedPresenter.CellType;
 		_selectedPresenter.SetType(presenter.CellType, false);
 		presenter.SetType(tempCellType, false);
-		DestroyCells(_selectedPresenter, presenter);
+		CheckForMatches();
+		var debugStr = string.Empty;
+		foreach (var cellPresenter in _matchesBuffer)
+		{
+			debugStr += $"cell: {cellPresenter.IndexX}, {cellPresenter.IndexY}; ";
+		}
+		Debug.Log($"_matchesBuffer.count: {_matchesBuffer.Count} {debugStr}");
+		// DestroyCells(_selectedPresenter, presenter);
+
+		foreach (var cellPresenter in _matchesBuffer)
+		{
+			cellPresenter.ActivateDisappearAnimation();
+		}
 	}
 
 	private void OnSignalResetPlayerInputData(SignalResetPlayerInputData signalData)
@@ -615,104 +642,169 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 		_selectedPresenter = null;
 	}
 
+	private void CheckForMatches()
+	{
+		_matchesBuffer.Clear();
+		for (var y = 0; y < Utils.PlateSizeY; y++)
+		{
+			var rowList = _rowsPresenters[y];
+			for (var x = 0; x < rowList.Count; x++)
+			{
+				CheckLine( x, 0, 0, 1);
+			}
+		}
+
+		//checkColumns
+		for (var x = 0; x < Utils.PlateSizeX; x++)
+		{
+			var columnList = _columnsPresenters[x];
+			for (var y = 0; y < columnList.Count; y++)
+			{
+				CheckLine( 0, y, 1, 0);
+			}
+		}
+	}
+
+	private void CheckLine(int startX, int startY, int deltaX, int deltaY)
+	{
+		_matchPositionsBuffer.Clear();
+		var count = 1;
+		var currentCellType = _gameBoard[startX, startY].CellType;
+		_matchPositionsBuffer.Add(_gameBoard[startX, startY]);
+
+		for (var i = 1; i < Math.Max(_gameBoard.GetLength(0), _gameBoard.GetLength(1)); i++)
+		{
+			var x = startX + i * deltaX;
+			var y = startY + i * deltaY;
+
+			if (x >= _gameBoard.GetLength(0) || y >= _gameBoard.GetLength(1))
+				break;
+
+			if (_gameBoard[x, y].CellType == currentCellType)
+			{
+				count++;
+				_matchPositionsBuffer.Add(_gameBoard[x, y]);
+			}
+			else
+			{
+				if (count >= 3)
+				{
+					// Добавляем все позиции текущей последовательности
+					AddRangeExceptDuplicates(_matchesBuffer, _matchPositionsBuffer);
+				}
+				
+				currentCellType = _gameBoard[x, y].CellType;
+				count = 1;
+				_matchPositionsBuffer.Clear(); // очищаем список для новой последовательности
+				_matchPositionsBuffer.Add(_gameBoard[x, y]); // добавляем новую начальную позицию
+			}
+		}
+
+		// Проверяем последний сегмент
+		if (count >= 3)
+			AddRangeExceptDuplicates(_matchesBuffer, _matchPositionsBuffer);
+	}
+
+	private void AddRangeExceptDuplicates(List<CellPresenter> mainList, List<CellPresenter> additionalList)
+	{
+		foreach (var cellPresenter in additionalList)
+		{
+			if (!mainList.Contains(cellPresenter))
+				mainList.Add(cellPresenter);
+		}
+	}
+	
 	private void DestroyCells(CellPresenter firstPresenter, CellPresenter secondPresenter)
 	{
-		_firstCellsBuffer.Clear();
-		_secondCellsBuffer.Clear();
-		_thirdCellsBuffer.Clear();
-		_fourthCellsBuffer.Clear();
-		_generalCellsBuffer.Clear();
-
-		var needToDisappearFirstPresenter = false;
-		var needToDisappearSecondPresenter = false;
-
-		if (firstPresenter.IndexX == secondPresenter.IndexX)
-		{
-			var cellsFromFirstRow = _rowsPresenters[firstPresenter.IndexY];
-			var cellsFromSecondRow = _rowsPresenters[secondPresenter.IndexY];
-			var cellsFromColumn = _columnsPresenters[firstPresenter.IndexX];
-
-			SelectCellsForDestroying(cellsFromFirstRow, cellsFromSecondRow, cellsFromColumn,
-				firstPresenter.IndexX, secondPresenter.IndexX,
-				firstPresenter.IndexY, secondPresenter.IndexY,
-				secondPresenter.CellType, firstPresenter.CellType);
-		}
-
-		if (firstPresenter.IndexY == secondPresenter.IndexY)
-		{
-			var cellsFromFirstColumn = _columnsPresenters[firstPresenter.IndexX];
-			var cellsFromSecondColumn = _columnsPresenters[secondPresenter.IndexX];
-			var cellsFromRow = _rowsPresenters[firstPresenter.IndexY];
-
-			SelectCellsForDestroying(cellsFromFirstColumn, cellsFromSecondColumn, cellsFromRow,
-				firstPresenter.IndexY, secondPresenter.IndexY,
-				firstPresenter.IndexX, secondPresenter.IndexX,
-				secondPresenter.CellType, firstPresenter.CellType);
-		}
-
-		if (_firstCellsBuffer.Count >= 2)
-		{
-			Debug.Log($"destroy cellsFirst");
-			foreach (var presenter in _firstCellsBuffer)
-				presenter.ActivateDisappearAnimation();
-
-			needToDisappearSecondPresenter = true;
-			_generalCellsBuffer.AddRange(_firstCellsBuffer);
-		}
-
-		if (_secondCellsBuffer.Count >= 2)
-		{
-			Debug.Log($"destroy cellsSecond");
-			foreach (var presenter in _secondCellsBuffer)
-				presenter.ActivateDisappearAnimation();
-
-			needToDisappearFirstPresenter = true;
-			_generalCellsBuffer.AddRange(_secondCellsBuffer);
-		}
-
-		if (_thirdCellsBuffer.Count >= 2)
-		{
-			Debug.Log($"destroy cellsThird");
-			foreach (var presenter in _thirdCellsBuffer)
-				presenter.ActivateDisappearAnimation();
-
-			needToDisappearFirstPresenter = true;
-			_generalCellsBuffer.AddRange(_thirdCellsBuffer);
-		}
-
-		if (_fourthCellsBuffer.Count >= 2)
-		{
-			Debug.Log($"destroy cellsFourth");
-			foreach (var presenter in _fourthCellsBuffer)
-				presenter.ActivateDisappearAnimation();
-
-			needToDisappearSecondPresenter = true;
-			_generalCellsBuffer.AddRange(_fourthCellsBuffer);
-		}
-
-		Debug.Log($"cellsFirst.Count: {_firstCellsBuffer.Count}, cellsSecond.Count: {_secondCellsBuffer.Count}, " +
-				$"cellsThird.Count: {_thirdCellsBuffer.Count}, cellsFourth.Count: {_fourthCellsBuffer.Count}");
-		if (needToDisappearFirstPresenter)
-		{
-			firstPresenter.ActivateDisappearAnimation();
-			_generalCellsBuffer.Add(firstPresenter);
-		}
-		else
-		{
-			// firstPresenter.SetCachedNewType(secondPresenter.CellType, false, 1);
-		}
-
-		if (needToDisappearSecondPresenter)
-		{
-			secondPresenter.ActivateDisappearAnimation();
-			_generalCellsBuffer.Add(secondPresenter);
-		}
-		else
-		{
-			// secondPresenter.SetCachedNewType(firstPresenter.CellType, false, 1);
-		}
-
-		// DropCells();
+		// _firstCellsBuffer.Clear();
+		// _secondCellsBuffer.Clear();
+		// _thirdCellsBuffer.Clear();
+		// _fourthCellsBuffer.Clear();
+		// _generalCellsBuffer.Clear();
+		//
+		// var needToDisappearFirstPresenter = false;
+		// var needToDisappearSecondPresenter = false;
+		//
+		// if (firstPresenter.IndexX == secondPresenter.IndexX)
+		// {
+		// 	var cellsFromFirstRow = _rowsPresenters[firstPresenter.IndexY];
+		// 	var cellsFromSecondRow = _rowsPresenters[secondPresenter.IndexY];
+		// 	var cellsFromColumn = _columnsPresenters[firstPresenter.IndexX];
+		//
+		// 	SelectCellsForDestroying(cellsFromFirstRow, cellsFromSecondRow, cellsFromColumn,
+		// 		firstPresenter.IndexX, secondPresenter.IndexX,
+		// 		firstPresenter.IndexY, secondPresenter.IndexY,
+		// 		secondPresenter.CellType, firstPresenter.CellType);
+		// }
+		//
+		// if (firstPresenter.IndexY == secondPresenter.IndexY)
+		// {
+		// 	var cellsFromFirstColumn = _columnsPresenters[firstPresenter.IndexX];
+		// 	var cellsFromSecondColumn = _columnsPresenters[secondPresenter.IndexX];
+		// 	var cellsFromRow = _rowsPresenters[firstPresenter.IndexY];
+		//
+		// 	SelectCellsForDestroying(cellsFromFirstColumn, cellsFromSecondColumn, cellsFromRow,
+		// 		firstPresenter.IndexY, secondPresenter.IndexY,
+		// 		firstPresenter.IndexX, secondPresenter.IndexX,
+		// 		secondPresenter.CellType, firstPresenter.CellType);
+		// }
+		//
+		// if (_firstCellsBuffer.Count >= 2)
+		// {
+		// 	Debug.Log($"destroy cellsFirst");
+		// 	foreach (var presenter in _firstCellsBuffer)
+		// 		presenter.ActivateDisappearAnimation();
+		//
+		// 	needToDisappearSecondPresenter = true;
+		// 	_generalCellsBuffer.AddRange(_firstCellsBuffer);
+		// }
+		//
+		// if (_secondCellsBuffer.Count >= 2)
+		// {
+		// 	Debug.Log($"destroy cellsSecond");
+		// 	foreach (var presenter in _secondCellsBuffer)
+		// 		presenter.ActivateDisappearAnimation();
+		//
+		// 	needToDisappearFirstPresenter = true;
+		// 	_generalCellsBuffer.AddRange(_secondCellsBuffer);
+		// }
+		//
+		// if (_thirdCellsBuffer.Count >= 2)
+		// {
+		// 	Debug.Log($"destroy cellsThird");
+		// 	foreach (var presenter in _thirdCellsBuffer)
+		// 		presenter.ActivateDisappearAnimation();
+		//
+		// 	needToDisappearFirstPresenter = true;
+		// 	_generalCellsBuffer.AddRange(_thirdCellsBuffer);
+		// }
+		//
+		// if (_fourthCellsBuffer.Count >= 2)
+		// {
+		// 	Debug.Log($"destroy cellsFourth");
+		// 	foreach (var presenter in _fourthCellsBuffer)
+		// 		presenter.ActivateDisappearAnimation();
+		//
+		// 	needToDisappearSecondPresenter = true;
+		// 	_generalCellsBuffer.AddRange(_fourthCellsBuffer);
+		// }
+		//
+		// Debug.Log($"cellsFirst.Count: {_firstCellsBuffer.Count}, cellsSecond.Count: {_secondCellsBuffer.Count}, " +
+		// 		$"cellsThird.Count: {_thirdCellsBuffer.Count}, cellsFourth.Count: {_fourthCellsBuffer.Count}");
+		//
+		// if (needToDisappearFirstPresenter)
+		// {
+		// 	firstPresenter.ActivateDisappearAnimation();
+		// 	_generalCellsBuffer.Add(firstPresenter);
+		// }
+		//
+		// if (needToDisappearSecondPresenter)
+		// {
+		// 	secondPresenter.ActivateDisappearAnimation();
+		// 	_generalCellsBuffer.Add(secondPresenter);
+		// }
+		//
+		// _timerWaitingAnimations.Restart();
 	}
 
 	private void SelectCellsForDestroying
@@ -726,129 +818,129 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 		CellTypeEnum firstCellType,
 		CellTypeEnum secondCellType)
 	{
-		for (var i = firstPresenterFirstIndex + 1; i < firstParallelLineCells.Count; i++)
-		{
-			if (firstParallelLineCells[i].CellType == secondCellType)
-				_firstCellsBuffer.Add(firstParallelLineCells[i]);
-			else
-				break;
-		}
-
-		for (var i = firstPresenterFirstIndex - 1; i >= 0; i--)
-		{
-			if (firstParallelLineCells[i].CellType == secondCellType)
-				_firstCellsBuffer.Add(firstParallelLineCells[i]);
-			else
-				break;
-		}
-
-		for (var i = secondPresenterFirstIndex + 1; i < secondParallelLineCells.Count; i++)
-		{
-			if (secondParallelLineCells[i].CellType == firstCellType)
-				_secondCellsBuffer.Add(secondParallelLineCells[i]);
-			else
-				break;
-		}
-
-		for (var i = firstPresenterFirstIndex - 1; i >= 0; i--)
-		{
-			if (secondParallelLineCells[i].CellType == firstCellType)
-				_secondCellsBuffer.Add(secondParallelLineCells[i]);
-			else
-				break;
-		}
-
-		if (secondPresenterSecondIndex > firstPresenterSecondIndex)
-		{
-			for (var i = secondPresenterSecondIndex + 1; i < perpendicularLineCells.Count; i++)
-			{
-				if (perpendicularLineCells[i].CellType == firstCellType)
-					_thirdCellsBuffer.Add(perpendicularLineCells[i]);
-				else
-					break;
-			}
-
-			for (var i = firstPresenterSecondIndex - 1; i >= 0; i--)
-			{
-				if (perpendicularLineCells[i].CellType == secondCellType)
-					_fourthCellsBuffer.Add(perpendicularLineCells[i]);
-				else
-					break;
-			}
-		}
-		else
-		{
-			for (var i = firstPresenterSecondIndex + 1; i < perpendicularLineCells.Count; i++)
-			{
-				if (perpendicularLineCells[i].CellType == secondCellType)
-					_fourthCellsBuffer.Add(perpendicularLineCells[i]);
-				else
-					break;
-			}
-
-			for (var i = secondPresenterSecondIndex - 1; i >= 0; i--)
-			{
-				if (perpendicularLineCells[i].CellType == firstCellType)
-					_thirdCellsBuffer.Add(perpendicularLineCells[i]);
-				else
-					break;
-			}
-		}
+		// for (var i = firstPresenterFirstIndex + 1; i < firstParallelLineCells.Count; i++)
+		// {
+		// 	if (firstParallelLineCells[i].CellType == secondCellType)
+		// 		_firstCellsBuffer.Add(firstParallelLineCells[i]);
+		// 	else
+		// 		break;
+		// }
+		//
+		// for (var i = firstPresenterFirstIndex - 1; i >= 0; i--)
+		// {
+		// 	if (firstParallelLineCells[i].CellType == secondCellType)
+		// 		_firstCellsBuffer.Add(firstParallelLineCells[i]);
+		// 	else
+		// 		break;
+		// }
+		//
+		// for (var i = secondPresenterFirstIndex + 1; i < secondParallelLineCells.Count; i++)
+		// {
+		// 	if (secondParallelLineCells[i].CellType == firstCellType)
+		// 		_secondCellsBuffer.Add(secondParallelLineCells[i]);
+		// 	else
+		// 		break;
+		// }
+		//
+		// for (var i = firstPresenterFirstIndex - 1; i >= 0; i--)
+		// {
+		// 	if (secondParallelLineCells[i].CellType == firstCellType)
+		// 		_secondCellsBuffer.Add(secondParallelLineCells[i]);
+		// 	else
+		// 		break;
+		// }
+		//
+		// if (secondPresenterSecondIndex > firstPresenterSecondIndex)
+		// {
+		// 	for (var i = secondPresenterSecondIndex + 1; i < perpendicularLineCells.Count; i++)
+		// 	{
+		// 		if (perpendicularLineCells[i].CellType == firstCellType)
+		// 			_thirdCellsBuffer.Add(perpendicularLineCells[i]);
+		// 		else
+		// 			break;
+		// 	}
+		//
+		// 	for (var i = firstPresenterSecondIndex - 1; i >= 0; i--)
+		// 	{
+		// 		if (perpendicularLineCells[i].CellType == secondCellType)
+		// 			_fourthCellsBuffer.Add(perpendicularLineCells[i]);
+		// 		else
+		// 			break;
+		// 	}
+		// }
+		// else
+		// {
+		// 	for (var i = firstPresenterSecondIndex + 1; i < perpendicularLineCells.Count; i++)
+		// 	{
+		// 		if (perpendicularLineCells[i].CellType == secondCellType)
+		// 			_fourthCellsBuffer.Add(perpendicularLineCells[i]);
+		// 		else
+		// 			break;
+		// 	}
+		//
+		// 	for (var i = secondPresenterSecondIndex - 1; i >= 0; i--)
+		// 	{
+		// 		if (perpendicularLineCells[i].CellType == firstCellType)
+		// 			_thirdCellsBuffer.Add(perpendicularLineCells[i]);
+		// 		else
+		// 			break;
+		// 	}
+		// }
 	}
 
 
-	// private void DropCells()
-	// {
-	// 	foreach (var cellsList in _affectedColumns.Values)
-	// 		cellsList.Clear();
-	//
-	// 	foreach (var cellPresenter in _generalCellsBuffer)
-	// 	{
-	// 		if (!_affectedColumns[cellPresenter.IndexX].Contains(cellPresenter))
-	// 			_affectedColumns[cellPresenter.IndexX].Add(cellPresenter);
-	// 	}
-	//
-	// 	foreach (var affectedColumn in _affectedColumns)
-	// 	{
-	// 		foreach (var cellPresenter in affectedColumn.Value)
-	// 		{
-	// 			Debug.Log($"DropCells column: {affectedColumn.Key}, count: {affectedColumn.Value.Count}, cell x: {cellPresenter.IndexX}, cell y: {cellPresenter.IndexY}");
-	// 		}
-	// 	}
-	//
-	// 	for (var i = 0; i < _affectedColumns.Count; i++)
-	// 	{
-	// 		var affectedCells = _affectedColumns[i];
-	// 		if (affectedCells.Count == 0)
-	// 				continue;
-	// 	
-	// 		var allCellsInColumn = _columnsPresenters[i];
-	// 		var affectedCellsCount = affectedCells.Count;
-	// 		var maxAffectedIndex = 0;
-	// 	
-	// 		foreach (var cell in affectedCells)
-	// 		{
-	// 			if (maxAffectedIndex < cell.IndexY)
-	// 				maxAffectedIndex = cell.IndexY;
-	// 		}
-	// 	
-	// 		Debug.Log($"DropCells column: {i}, maxAffectedIndex: {maxAffectedIndex}");
-	//
-	// 		for (var j = 0; j <= maxAffectedIndex; j++)
-	// 		{
-	// 			if (j - affectedCellsCount < 0)
-	// 			{
-	// 				var randomCellTypeIndex = Random.Range(0, _cellTypesCount);
-	// 				var randomCellType = (CellTypeEnum) randomCellTypeIndex;
-	// 				allCellsInColumn[j].SetCachedNewType(randomCellType, true, j + 1);
-	// 				continue;
-	// 			}
-	// 			
-	// 			allCellsInColumn[j].SetCachedNewType(allCellsInColumn[j - affectedCellsCount].CellType, false, j - affectedCellsCount + 1);
-	// 		}
-	// 	}
-	// }
-	//
+	private void DropCells()
+	{
+		foreach (var cellsList in _affectedColumns.Values)
+			cellsList.Clear();
+	
+		// foreach (var cellPresenter in _generalCellsBuffer)
+		// {
+		// 	if (!_affectedColumns[cellPresenter.IndexX].Contains(cellPresenter))
+		// 		_affectedColumns[cellPresenter.IndexX].Add(cellPresenter);
+		// }
+		//
+		// foreach (var affectedColumn in _affectedColumns)
+		// {
+		// 	foreach (var cellPresenter in affectedColumn.Value)
+		// 	{
+		// 		Debug.Log($"DropCells column: {affectedColumn.Key}, count: {affectedColumn.Value.Count}, cell x: {cellPresenter.IndexX}, cell y: {cellPresenter.IndexY}");
+		// 	}
+		// }
+	
+		// for (var i = 0; i < _affectedColumns.Count; i++)
+		// {
+		// 	var affectedCells = _affectedColumns[i];
+		// 	if (affectedCells.Count == 0)
+		// 			continue;
+		//
+		// 	var allCellsInColumn = _columnsPresenters[i];
+		// 	var affectedCellsCount = affectedCells.Count;
+		// 	var maxAffectedIndex = 0;
+		//
+		// 	foreach (var cell in affectedCells)
+		// 	{
+		// 		if (maxAffectedIndex < cell.IndexY)
+		// 			maxAffectedIndex = cell.IndexY;
+		// 	}
+		//
+		// 	Debug.Log($"DropCells column: {i}, maxAffectedIndex: {maxAffectedIndex}");
+		//
+		// 	for (var j = 0; j <= maxAffectedIndex; j++)
+		// 	{
+		// 		if (j - affectedCellsCount < 0)
+		// 		{
+		// 			var randomCellTypeIndex = Random.Range(0, _cellTypesCount);
+		// 			var randomCellType = (CellTypeEnum) randomCellTypeIndex;
+		// 			allCellsInColumn[j].SetCachedNewType(randomCellType, true, j + 1);
+		// 			continue;
+		// 		}
+		// 		
+		// 		allCellsInColumn[j].SetCachedNewType(allCellsInColumn[j - affectedCellsCount].CellType, false, j - affectedCellsCount + 1);
+		// 	}
+		// }
+	}
+	
 	
 	public override void Dispose()
 	{

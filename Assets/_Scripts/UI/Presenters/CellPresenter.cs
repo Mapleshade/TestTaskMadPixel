@@ -16,7 +16,7 @@ public class CellPresenter : UiPresenter
 	private readonly Tween _upBadMoveAnimation;
 	private readonly Tween _downBadMoveAnimation;
 	// private readonly Tween _dropNewTypeAnimation;
-	// private readonly Tween _dropNewTypeWithFadeAnimation;
+	private readonly Tween _dropNewTypeWithFadeAnimation;
 	private ViewCellRoot View { get; }
 	public CellTypeEnum CellType { get; private set; }
 	public Transform ViewTransform => View.transform;
@@ -141,22 +141,23 @@ public class CellPresenter : UiPresenter
 		// 	.SetAutoKill(false)
 		// 	.Pause();
 
-		// _dropNewTypeWithFadeAnimation = DOTween.Sequence()
-		// 	.AppendInterval(1f)
-		// 	.Append(View.PanelFruitsRoot.DOAnchorPos(new Vector2(0f, cellHeight), 0f))
-		// 	.Join(View.CanvasGroupFruitsRoot.DOFade(0, 0f))
-		// 	.Append(View.PanelFruitsRoot.DOAnchorPos(new Vector2(0f, 0f), 0.5f))
-		// 	.Join(View.CanvasGroupFruitsRoot.DOFade(1f, 0.5f))
-		// 	.AppendCallback(AfterDropNewType)
-		// 	.SetId(this)
-		// 	.SetAutoKill(false)
-		// 	.Pause();
+		_dropNewTypeWithFadeAnimation = DOTween.Sequence()
+			.AppendInterval(1f)
+			.Append(View.PanelFruitsRoot.DOAnchorPos(new Vector2(0f, cellHeight), 0f))
+			.Join(View.CanvasGroupFruitsRoot.DOFade(0, 0f))
+			.Append(View.PanelFruitsRoot.DOAnchorPos(new Vector2(0f, 0f), 0.5f))
+			.Join(View.CanvasGroupFruitsRoot.DOFade(1f, 0.5f))
+			.AppendCallback(AfterDropNewType)
+			.SetId(this)
+			.SetAutoKill(false)
+			.Pause();
 
 			#endregion
 	}
 
 	public void SetType(CellTypeEnum cellType, bool updateView)
 	{
+		Debug.Log($"SetType cell x: {IndexX}, cell y: {IndexY}, old type: {CellType}, new type: {cellType}");
 		CellType = cellType;
 		
 		if (updateView)
@@ -165,7 +166,8 @@ public class CellPresenter : UiPresenter
 
 	private void UpdateView()
 	{
-		View.CanvasGroupFruitsRoot.alpha = 1f;
+		Debug.Log($"UpdateView cell x: {IndexX}, cell y: {IndexY}, type: {CellType}");
+		// View.CanvasGroupFruitsRoot.alpha = 1f;
 		View.PanelFruitsRoot.anchoredPosition = Vector2.zero;
 
 		foreach (var cellTypeData in View.ImagesCellType)
@@ -204,6 +206,7 @@ public class CellPresenter : UiPresenter
 
 	public void ActivateLeftAnimation()
 	{
+		Debug.Log($"ActivateLeftAnimation cell x: {IndexX}, cell y: {IndexY}, type: {CellType}");
 		if (!HasPlayingMoveAnimation())
 			_leftMoveAnimation.Restart();
 	}
@@ -215,18 +218,21 @@ public class CellPresenter : UiPresenter
 
 	public void ActivateRightAnimation()
 	{
+		Debug.Log($"ActivateRightAnimation cell x: {IndexX}, cell y: {IndexY}, type: {CellType}");
 		if (!HasPlayingMoveAnimation())
 			_rightMoveAnimation.Restart();
 	}
 
 	public void ActivateUpAnimation()
 	{
+		Debug.Log($"ActivateUpAnimation cell x: {IndexX}, cell y: {IndexY}, type: {CellType}");
 		if (!HasPlayingMoveAnimation())
 			_upMoveAnimation.Restart();
 	}
 
 	public void ActivateDownAnimation()
 	{
+		Debug.Log($"ActivateDownAnimation cell x: {IndexX}, cell y: {IndexY}, type: {CellType}");
 		if (!HasPlayingMoveAnimation())
 			_downMoveAnimation.Restart();
 	}
@@ -257,6 +263,7 @@ public class CellPresenter : UiPresenter
 
 	public void ActivateDisappearAnimation()
 	{
+		Debug.Log($"ActivateDisappearAnimation cell x: {IndexX}, cell y: {IndexY}, type: {CellType}");
 			_disappearAnimation.Restart();
 	}
 
@@ -267,8 +274,11 @@ public class CellPresenter : UiPresenter
 		_upMoveAnimation.Rewind();
 		_downMoveAnimation.Rewind();
 
-		if (!_disappearAnimation.IsPlaying())
+		// if (!_disappearAnimation.IsPlaying())
+		{
+			Debug.Log($"AfterMove cell x: {IndexX}, cell y: {IndexY}, type: {CellType}");
 			UpdateView();
+		}
 	}
 
 	private void AfterBadMove()
@@ -283,34 +293,34 @@ public class CellPresenter : UiPresenter
 
 	private void AfterDisappear()
 	{
-		_disappearAnimation.Rewind();
+		// _disappearAnimation.Rewind();
 
-		UpdateView();
+		// UpdateView();
 	}
 
-	// private void ActivateDropAnimation()
-	// {
-	// 	if (IndexY == 0)
-	// 	{
-	// 		_dropNewTypeWithFadeAnimation.Restart();
-	// 	}
-	// 	else
-	// 	{
-	// 		// _dropNewTypeAnimation.Restart();
-	// 		
-	// 		
-	// 		var rootSizeDelta = View.PaneRoot.sizeDelta;
-	// 		var cellHeight = rootSizeDelta.y;
-	//
-	// 		DOTween.Sequence()
-	// 			// .AppendInterval(1f)
-	// 			.Append(View.PanelFruitsRoot.DOAnchorPos(new Vector2(0f, _cachedDestroyedCellsCount * cellHeight), 0f))
-	// 			.Join(View.CanvasGroupFruitsRoot.DOFade(0, 0f))
-	// 			.Append(View.PanelFruitsRoot.DOAnchorPos(new Vector2(0f, 0f), 0.5f))
-	// 			.Join(View.CanvasGroupFruitsRoot.DOFade(1f, 0.5f))
-	// 			.AppendCallback(AfterDropNewType);
-	// 	}
-	// }
+	private void ActivateDropAnimation()
+	{
+		if (IndexY == 0)
+		{
+			_dropNewTypeWithFadeAnimation.Restart();
+		}
+		else
+		{
+			// _dropNewTypeAnimation.Restart();
+			
+			
+			var rootSizeDelta = View.PaneRoot.sizeDelta;
+			var cellHeight = rootSizeDelta.y;
+	
+			// DOTween.Sequence()
+			// 	// .AppendInterval(1f)
+			// 	.Append(View.PanelFruitsRoot.DOAnchorPos(new Vector2(0f, _cachedDestroyedCellsCount * cellHeight), 0f))
+			// 	.Join(View.CanvasGroupFruitsRoot.DOFade(0, 0f))
+			// 	.Append(View.PanelFruitsRoot.DOAnchorPos(new Vector2(0f, 0f), 0.5f))
+			// 	.Join(View.CanvasGroupFruitsRoot.DOFade(1f, 0.5f))
+			// 	.AppendCallback(AfterDropNewType);
+		}
+	}
 
 	private void AfterDropNewType()
 	{
