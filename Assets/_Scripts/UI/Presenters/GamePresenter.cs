@@ -502,27 +502,15 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 		{
 			_selectedPresenter.ActivateBadWayAnimation();
 		}
-		else if (CheckRightCellsAvailableToMerge(_selectedPresenter.IndexX, _rowsPresenters[_selectedPresenter.IndexY]))
-		{
-			_selectedPresenter.ActivateRightAnimation();
-			var presenter = _rowsPresenters[_selectedPresenter.IndexY][_selectedPresenter.IndexX + 1];
-			presenter.ActivateLeftAnimation();
-			var tempCellType = _selectedPresenter.CellType;
-			_selectedPresenter.SetType(presenter.CellType, false);
-			presenter.SetType(tempCellType, false);
-			DestroyCells(_selectedPresenter, presenter);
-		}
-		else if (_selectedPresenter.IndexX + 1 < _columnsPresenters.Count && CheckCellsFromParallelLineAvailableToMerge
+		else if (CheckRightCellsAvailableToMerge(_selectedPresenter.IndexX, _rowsPresenters[_selectedPresenter.IndexY])
+				|| _selectedPresenter.IndexX + 1 < _columnsPresenters.Count && CheckCellsFromParallelLineAvailableToMerge
 				(_selectedPresenter.IndexY, _columnsPresenters[_selectedPresenter.IndexX],
 					_columnsPresenters[_selectedPresenter.IndexX + 1]))
 		{
 			_selectedPresenter.ActivateRightAnimation();
 			var presenter = _rowsPresenters[_selectedPresenter.IndexY][_selectedPresenter.IndexX + 1];
 			presenter.ActivateLeftAnimation();
-			var tempCellType = _selectedPresenter.CellType;
-			_selectedPresenter.SetType(presenter.CellType, false);
-			presenter.SetType(tempCellType, false);
-			DestroyCells(_selectedPresenter, presenter);
+			SwapCellsTypesAndDestroyCells(presenter);
 		}
 		else
 		{
@@ -538,27 +526,15 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 		{
 			_selectedPresenter.ActivateBadWayAnimation();
 		}
-		else if (CheckLeftCellsAvailableToMerge(_selectedPresenter.IndexX, _rowsPresenters[_selectedPresenter.IndexY]))
-		{
-			_selectedPresenter.ActivateLeftAnimation();
-			var presenter = _rowsPresenters[_selectedPresenter.IndexY][_selectedPresenter.IndexX - 1];
-			presenter.ActivateRightAnimation();
-			var tempCellType = _selectedPresenter.CellType;
-			_selectedPresenter.SetType(presenter.CellType, false);
-			presenter.SetType(tempCellType, false);
-			DestroyCells(_selectedPresenter, presenter);
-		}
-		else if (_selectedPresenter.IndexX - 1 >= 0 && CheckCellsFromParallelLineAvailableToMerge
+		else if (CheckLeftCellsAvailableToMerge(_selectedPresenter.IndexX, _rowsPresenters[_selectedPresenter.IndexY])
+				|| _selectedPresenter.IndexX - 1 >= 0 && CheckCellsFromParallelLineAvailableToMerge
 				(_selectedPresenter.IndexY, _columnsPresenters[_selectedPresenter.IndexX],
 					_columnsPresenters[_selectedPresenter.IndexX - 1]))
 		{
 			_selectedPresenter.ActivateLeftAnimation();
 			var presenter = _rowsPresenters[_selectedPresenter.IndexY][_selectedPresenter.IndexX - 1];
 			presenter.ActivateRightAnimation();
-			var tempCellType = _selectedPresenter.CellType;
-			_selectedPresenter.SetType(presenter.CellType, false);
-			presenter.SetType(tempCellType, false);
-			DestroyCells(_selectedPresenter, presenter);
+			SwapCellsTypesAndDestroyCells(presenter);
 		}
 		else
 		{
@@ -575,28 +551,15 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 			_selectedPresenter.ActivateBadWayAnimation();
 		}
 		else if (CheckLeftCellsAvailableToMerge(_selectedPresenter.IndexY,
-					_columnsPresenters[_selectedPresenter.IndexX]))
-		{
-			_selectedPresenter.ActivateUpAnimation();
-			var presenter = _columnsPresenters[_selectedPresenter.IndexX][_selectedPresenter.IndexY - 1];
-			presenter.ActivateDownAnimation();
-			var tempCellType = _selectedPresenter.CellType;
-			_selectedPresenter.SetType(presenter.CellType, false);
-			presenter.SetType(tempCellType, false);
-
-			DestroyCells(_selectedPresenter, presenter);
-		}
-		else if (_selectedPresenter.IndexY - 1 >= 0 && CheckCellsFromParallelLineAvailableToMerge
+					_columnsPresenters[_selectedPresenter.IndexX])
+				|| _selectedPresenter.IndexY - 1 >= 0 && CheckCellsFromParallelLineAvailableToMerge
 				(_selectedPresenter.IndexX, _rowsPresenters[_selectedPresenter.IndexY],
 					_rowsPresenters[_selectedPresenter.IndexY - 1]))
 		{
 			_selectedPresenter.ActivateUpAnimation();
 			var presenter = _columnsPresenters[_selectedPresenter.IndexX][_selectedPresenter.IndexY - 1];
 			presenter.ActivateDownAnimation();
-			var tempCellType = _selectedPresenter.CellType;
-			_selectedPresenter.SetType(presenter.CellType, false);
-			presenter.SetType(tempCellType, false);
-			DestroyCells(_selectedPresenter, presenter);
+			SwapCellsTypesAndDestroyCells(presenter);
 		}
 		else
 		{
@@ -612,28 +575,15 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 		{
 			_selectedPresenter.ActivateBadWayAnimation();
 		}
-		else if (CheckRightCellsAvailableToMerge(_selectedPresenter.IndexY,
-					_columnsPresenters[_selectedPresenter.IndexX]))
-		{
-			_selectedPresenter.ActivateDownAnimation();
-			var presenter = _columnsPresenters[_selectedPresenter.IndexX][_selectedPresenter.IndexY + 1];
-			presenter.ActivateUpAnimation();
-			var tempCellType = _selectedPresenter.CellType;
-			_selectedPresenter.SetType(presenter.CellType, false);
-			presenter.SetType(tempCellType, false);
-			DestroyCells(_selectedPresenter, presenter);
-		}
-		else if (_selectedPresenter.IndexY + 1 < _rowsPresenters.Count && CheckCellsFromParallelLineAvailableToMerge
+		else if (CheckRightCellsAvailableToMerge(_selectedPresenter.IndexY, _columnsPresenters[_selectedPresenter.IndexX])
+				|| _selectedPresenter.IndexY + 1 < _rowsPresenters.Count && CheckCellsFromParallelLineAvailableToMerge
 				(_selectedPresenter.IndexX, _rowsPresenters[_selectedPresenter.IndexY],
 					_rowsPresenters[_selectedPresenter.IndexY + 1]))
 		{
 			_selectedPresenter.ActivateDownAnimation();
 			var presenter = _columnsPresenters[_selectedPresenter.IndexX][_selectedPresenter.IndexY + 1];
 			presenter.ActivateUpAnimation();
-			var tempCellType = _selectedPresenter.CellType;
-			_selectedPresenter.SetType(presenter.CellType, false);
-			presenter.SetType(tempCellType, false);
-			DestroyCells(_selectedPresenter, presenter);
+			SwapCellsTypesAndDestroyCells(presenter);
 		}
 		else
 		{
@@ -641,6 +591,14 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 			var presenter = _columnsPresenters[_selectedPresenter.IndexX][_selectedPresenter.IndexY + 1];
 			presenter.ActivateUpBadAnimation();
 		}
+	}
+
+	private void SwapCellsTypesAndDestroyCells(CellPresenter presenter)
+	{
+		var tempCellType = _selectedPresenter.CellType;
+		_selectedPresenter.SetType(presenter.CellType, false);
+		presenter.SetType(tempCellType, false);
+		DestroyCells(_selectedPresenter, presenter);
 	}
 
 	private void OnSignalResetPlayerInputData(SignalResetPlayerInputData signalData)
