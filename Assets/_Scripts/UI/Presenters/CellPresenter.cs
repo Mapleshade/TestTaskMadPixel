@@ -15,7 +15,6 @@ public class CellPresenter : UiPresenter
 	private readonly Tween _rightBadMoveAnimation;
 	private readonly Tween _upBadMoveAnimation;
 	private readonly Tween _downBadMoveAnimation;
-	// private readonly Tween _dropNewTypeAnimation;
 	private readonly Tween _dropNewTypeWithFadeAnimation;
 	private ViewCellRoot View { get; }
 	public CellTypeEnum CellType { get; private set; }
@@ -131,18 +130,7 @@ public class CellPresenter : UiPresenter
 
 		#region drop animations
 
-		// _dropNewTypeAnimation = DOTween.Sequence()
-		// 	.AppendInterval(1f)
-		// 	.Append(View.PanelFruitsRoot.DOAnchorPos(new Vector2(0f, cellHeight), 0f))
-		// 	.Join(View.CanvasGroupFruitsRoot.DOFade(1f, 0f))
-		// 	.Append(View.PanelFruitsRoot.DOAnchorPos(new Vector2(0f, 0f), 0.5f))
-		// 	.AppendCallback(AfterDropNewType)
-		// 	.SetId(this)
-		// 	.SetAutoKill(false)
-		// 	.Pause();
-
 		_dropNewTypeWithFadeAnimation = DOTween.Sequence()
-			.AppendInterval(1f)
 			.Append(View.PanelFruitsRoot.DOAnchorPos(new Vector2(0f, cellHeight), 0f))
 			.Join(View.CanvasGroupFruitsRoot.DOFade(0, 0f))
 			.Append(View.PanelFruitsRoot.DOAnchorPos(new Vector2(0f, 0f), 0.5f))
@@ -269,10 +257,10 @@ public class CellPresenter : UiPresenter
 
 	private void AfterMove()
 	{
-		_rightMoveAnimation.Rewind();
-		_leftMoveAnimation.Rewind();
-		_upMoveAnimation.Rewind();
-		_downMoveAnimation.Rewind();
+		// _rightMoveAnimation.Rewind();
+		// _leftMoveAnimation.Rewind();
+		// _upMoveAnimation.Rewind();
+		// _downMoveAnimation.Rewind();
 
 		// if (!_disappearAnimation.IsPlaying())
 		{
