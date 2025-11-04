@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using DG.Tweening;
 using UniRx;
 using UnityEngine;
@@ -12,11 +13,13 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 	private readonly Dictionary<string, CellPresenter> _allPresenters = new();
 	private readonly Dictionary<int, List<CellPresenter>> _rowsPresenters = new();
 	private readonly Dictionary<int, List<CellPresenter>> _columnsPresenters = new();
+	private readonly Dictionary<int, List<CellPresenter>> _affectedColumns = new();
 
 	private readonly List<CellPresenter> _firstCellsBuffer = new();
 	private readonly List<CellPresenter> _secondCellsBuffer = new();
 	private readonly List<CellPresenter> _thirdCellsBuffer = new();
 	private readonly List<CellPresenter> _fourthCellsBuffer = new();
+	private readonly List<CellPresenter> _generalCellsBuffer = new();
 
 	private readonly int _cellTypesCount;
 	private readonly Tween _timerForBlockPlate;
@@ -36,6 +39,9 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 
 		for (var i = 0; i < Utils.PlateSizeX; i++)
 			_columnsPresenters.Add(i, new List<CellPresenter>());
+
+		for (var i = 0; i < Utils.PlateSizeX; i++)
+			_affectedColumns.Add(i, new List<CellPresenter>());
 
 		_timerForBlockPlate = DOVirtual
 			.DelayedCall(1.5f, OnEndTimerForBlockPlate)
@@ -501,6 +507,8 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 			_selectedPresenter.ActivateRightAnimation();
 			var presenter = _rowsPresenters[_selectedPresenter.IndexY][_selectedPresenter.IndexX + 1];
 			presenter.ActivateLeftAnimation();
+			_selectedPresenter.SetCachedNewType(presenter.CellType, false);
+			presenter.SetCachedNewType(_selectedPresenter.CellType, false);
 			DestroyCells(_selectedPresenter, presenter);
 		}
 		else if (_selectedPresenter.IndexX + 1 < _columnsPresenters.Count && CheckCellsFromParallelLineAvailableToMerge
@@ -510,6 +518,8 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 			_selectedPresenter.ActivateRightAnimation();
 			var presenter = _rowsPresenters[_selectedPresenter.IndexY][_selectedPresenter.IndexX + 1];
 			presenter.ActivateLeftAnimation();
+			_selectedPresenter.SetCachedNewType(presenter.CellType, false);
+			presenter.SetCachedNewType(_selectedPresenter.CellType, false);
 			DestroyCells(_selectedPresenter, presenter);
 		}
 		else
@@ -531,6 +541,8 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 			_selectedPresenter.ActivateLeftAnimation();
 			var presenter = _rowsPresenters[_selectedPresenter.IndexY][_selectedPresenter.IndexX - 1];
 			presenter.ActivateRightAnimation();
+			_selectedPresenter.SetCachedNewType(presenter.CellType, false);
+			presenter.SetCachedNewType(_selectedPresenter.CellType, false);
 			DestroyCells(_selectedPresenter, presenter);
 		}
 		else if (_selectedPresenter.IndexX - 1 >= 0 && CheckCellsFromParallelLineAvailableToMerge
@@ -540,6 +552,8 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 			_selectedPresenter.ActivateLeftAnimation();
 			var presenter = _rowsPresenters[_selectedPresenter.IndexY][_selectedPresenter.IndexX - 1];
 			presenter.ActivateRightAnimation();
+			_selectedPresenter.SetCachedNewType(presenter.CellType, false);
+			presenter.SetCachedNewType(_selectedPresenter.CellType, false);
 			DestroyCells(_selectedPresenter, presenter);
 		}
 		else
@@ -562,6 +576,9 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 			_selectedPresenter.ActivateUpAnimation();
 			var presenter = _columnsPresenters[_selectedPresenter.IndexX][_selectedPresenter.IndexY - 1];
 			presenter.ActivateDownAnimation();
+			_selectedPresenter.SetCachedNewType(presenter.CellType, false);
+			presenter.SetCachedNewType(_selectedPresenter.CellType, false);
+
 			DestroyCells(_selectedPresenter, presenter);
 		}
 		else if (_selectedPresenter.IndexY - 1 >= 0 && CheckCellsFromParallelLineAvailableToMerge
@@ -571,6 +588,8 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 			_selectedPresenter.ActivateUpAnimation();
 			var presenter = _columnsPresenters[_selectedPresenter.IndexX][_selectedPresenter.IndexY - 1];
 			presenter.ActivateDownAnimation();
+			_selectedPresenter.SetCachedNewType(presenter.CellType, false);
+			presenter.SetCachedNewType(_selectedPresenter.CellType, false);
 			DestroyCells(_selectedPresenter, presenter);
 		}
 		else
@@ -593,6 +612,8 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 			_selectedPresenter.ActivateDownAnimation();
 			var presenter = _columnsPresenters[_selectedPresenter.IndexX][_selectedPresenter.IndexY + 1];
 			presenter.ActivateUpAnimation();
+			_selectedPresenter.SetCachedNewType(presenter.CellType, false);
+			presenter.SetCachedNewType(_selectedPresenter.CellType, false);
 			DestroyCells(_selectedPresenter, presenter);
 		}
 		else if (_selectedPresenter.IndexY + 1 < _rowsPresenters.Count && CheckCellsFromParallelLineAvailableToMerge
@@ -602,6 +623,8 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 			_selectedPresenter.ActivateDownAnimation();
 			var presenter = _columnsPresenters[_selectedPresenter.IndexX][_selectedPresenter.IndexY + 1];
 			presenter.ActivateUpAnimation();
+			_selectedPresenter.SetCachedNewType(presenter.CellType, false);
+			presenter.SetCachedNewType(_selectedPresenter.CellType, false);
 			DestroyCells(_selectedPresenter, presenter);
 		}
 		else
@@ -632,6 +655,7 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 		_secondCellsBuffer.Clear();
 		_thirdCellsBuffer.Clear();
 		_fourthCellsBuffer.Clear();
+		_generalCellsBuffer.Clear();
 
 		var needToDisappearFirstPresenter = false;
 		var needToDisappearSecondPresenter = false;
@@ -667,6 +691,7 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 				presenter.ActivateDisappearAnimation();
 
 			needToDisappearSecondPresenter = true;
+			_generalCellsBuffer.AddRange(_firstCellsBuffer);
 		}
 
 		if (_secondCellsBuffer.Count >= 2)
@@ -676,6 +701,7 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 				presenter.ActivateDisappearAnimation();
 
 			needToDisappearFirstPresenter = true;
+			_generalCellsBuffer.AddRange(_secondCellsBuffer);
 		}
 
 		if (_thirdCellsBuffer.Count >= 2)
@@ -685,6 +711,7 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 				presenter.ActivateDisappearAnimation();
 
 			needToDisappearFirstPresenter = true;
+			_generalCellsBuffer.AddRange(_thirdCellsBuffer);
 		}
 
 		if (_fourthCellsBuffer.Count >= 2)
@@ -694,15 +721,32 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 				presenter.ActivateDisappearAnimation();
 
 			needToDisappearSecondPresenter = true;
+			_generalCellsBuffer.AddRange(_fourthCellsBuffer);
 		}
 
 		Debug.Log($"cellsFirst.Count: {_firstCellsBuffer.Count}, cellsSecond.Count: {_secondCellsBuffer.Count}, " +
 				$"cellsThird.Count: {_thirdCellsBuffer.Count}, cellsFourth.Count: {_fourthCellsBuffer.Count}");
 		if (needToDisappearFirstPresenter)
+		{
 			firstPresenter.ActivateDisappearAnimation();
+			_generalCellsBuffer.Add(firstPresenter);
+		}
+		else
+		{
+			// firstPresenter.SetCachedNewType(secondPresenter.CellType, false, 1);
+		}
 
 		if (needToDisappearSecondPresenter)
+		{
 			secondPresenter.ActivateDisappearAnimation();
+			_generalCellsBuffer.Add(secondPresenter);
+		}
+		else
+		{
+			// secondPresenter.SetCachedNewType(firstPresenter.CellType, false, 1);
+		}
+
+		// DropCells();
 	}
 
 	private void SelectCellsForDestroying
@@ -786,6 +830,60 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 		}
 	}
 
+
+	// private void DropCells()
+	// {
+	// 	foreach (var cellsList in _affectedColumns.Values)
+	// 		cellsList.Clear();
+	//
+	// 	foreach (var cellPresenter in _generalCellsBuffer)
+	// 	{
+	// 		if (!_affectedColumns[cellPresenter.IndexX].Contains(cellPresenter))
+	// 			_affectedColumns[cellPresenter.IndexX].Add(cellPresenter);
+	// 	}
+	//
+	// 	foreach (var affectedColumn in _affectedColumns)
+	// 	{
+	// 		foreach (var cellPresenter in affectedColumn.Value)
+	// 		{
+	// 			Debug.Log($"DropCells column: {affectedColumn.Key}, count: {affectedColumn.Value.Count}, cell x: {cellPresenter.IndexX}, cell y: {cellPresenter.IndexY}");
+	// 		}
+	// 	}
+	//
+	// 	for (var i = 0; i < _affectedColumns.Count; i++)
+	// 	{
+	// 		var affectedCells = _affectedColumns[i];
+	// 		if (affectedCells.Count == 0)
+	// 				continue;
+	// 	
+	// 		var allCellsInColumn = _columnsPresenters[i];
+	// 		var affectedCellsCount = affectedCells.Count;
+	// 		var maxAffectedIndex = 0;
+	// 	
+	// 		foreach (var cell in affectedCells)
+	// 		{
+	// 			if (maxAffectedIndex < cell.IndexY)
+	// 				maxAffectedIndex = cell.IndexY;
+	// 		}
+	// 	
+	// 		Debug.Log($"DropCells column: {i}, maxAffectedIndex: {maxAffectedIndex}");
+	//
+	// 		for (var j = 0; j <= maxAffectedIndex; j++)
+	// 		{
+	// 			if (j - affectedCellsCount < 0)
+	// 			{
+	// 				var randomCellTypeIndex = Random.Range(0, _cellTypesCount);
+	// 				var randomCellType = (CellTypeEnum) randomCellTypeIndex;
+	// 				allCellsInColumn[j].SetCachedNewType(randomCellType, true, j + 1);
+	// 				continue;
+	// 			}
+	// 			
+	// 			allCellsInColumn[j].SetCachedNewType(allCellsInColumn[j - affectedCellsCount].CellType, false, j - affectedCellsCount + 1);
+	// 		}
+	// 	}
+	// }
+	//
+	
 	public override void Dispose()
 	{
 		base.Dispose();
