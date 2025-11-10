@@ -44,7 +44,6 @@ public class CellPresenter : UiPresenter
 		_disappearAnimation = DOTween.Sequence()
 			.AppendInterval(0.5f)
 			.Append(View.CanvasGroupFruitsRoot.DOFade(0, 0.5f))
-			.AppendCallback(AfterDisappear)
 			.SetId(this)
 			.SetAutoKill(false)
 			.Pause();
@@ -130,24 +129,22 @@ public class CellPresenter : UiPresenter
 
 	public void SetType(CellTypeEnum cellType, bool updateView)
 	{
-		Debug.Log($"SetType cell x: {IndexX}, cell y: {IndexY}, old type: {CellType}, new type: {cellType}");
 		CellType = cellType;
-		
+
 		if (updateView)
 			UpdateView();
 	}
 
 	private void UpdateView()
 	{
-		Debug.Log($"UpdateView cell x: {IndexX}, cell y: {IndexY}, type: {CellType}");
-		// View.CanvasGroupFruitsRoot.alpha = 1f;
 		View.PanelFruitsRoot.anchoredPosition = Vector2.zero;
 
 		foreach (var cellTypeData in View.ImagesCellType)
 			cellTypeData.PanelImage.CheckSetActive(cellTypeData.CellType == CellType);
 	}
 
-	public void InitCell(bool isLight, CellTypeEnum cellType, Transform parentTransform, Transform parentForBackgroundsTransform, int indexX, int indexY)
+	public void InitCell(bool isLight, CellTypeEnum cellType, Transform parentTransform,
+		Transform parentForBackgroundsTransform, int indexX, int indexY)
 	{
 		View.transform.SetParent(parentTransform);
 		View.PanelBackgroundsRoot.SetParent(parentForBackgroundsTransform);
@@ -166,7 +163,7 @@ public class CellPresenter : UiPresenter
 	}
 
 	#region animations methods
-	
+
 	public void SetActiveSelectedAnimation(bool isActive)
 	{
 		View.ImageShine.enabled = isActive;
@@ -179,7 +176,6 @@ public class CellPresenter : UiPresenter
 
 	public void ActivateLeftAnimation()
 	{
-		Debug.Log($"ActivateLeftAnimation cell x: {IndexX}, cell y: {IndexY}, type: {CellType}");
 		if (!HasPlayingMoveAnimation())
 			_leftMoveAnimation.Restart();
 	}
@@ -191,21 +187,18 @@ public class CellPresenter : UiPresenter
 
 	public void ActivateRightAnimation()
 	{
-		Debug.Log($"ActivateRightAnimation cell x: {IndexX}, cell y: {IndexY}, type: {CellType}");
 		if (!HasPlayingMoveAnimation())
 			_rightMoveAnimation.Restart();
 	}
 
 	public void ActivateUpAnimation()
 	{
-		Debug.Log($"ActivateUpAnimation cell x: {IndexX}, cell y: {IndexY}, type: {CellType}");
 		if (!HasPlayingMoveAnimation())
 			_upMoveAnimation.Restart();
 	}
 
 	public void ActivateDownAnimation()
 	{
-		Debug.Log($"ActivateDownAnimation cell x: {IndexX}, cell y: {IndexY}, type: {CellType}");
 		if (!HasPlayingMoveAnimation())
 			_downMoveAnimation.Restart();
 	}
@@ -236,13 +229,11 @@ public class CellPresenter : UiPresenter
 
 	public void ActivateDisappearAnimation()
 	{
-		Debug.Log($"ActivateDisappearAnimation cell x: {IndexX}, cell y: {IndexY}, type: {CellType}");
-			_disappearAnimation.Restart();
+		_disappearAnimation.Restart();
 	}
 
 	private void AfterMove()
 	{
-		Debug.Log($"AfterMove cell x: {IndexX}, cell y: {IndexY}, type: {CellType}");
 		UpdateView();
 	}
 
@@ -256,17 +247,12 @@ public class CellPresenter : UiPresenter
 		UpdateView();
 	}
 
-	private void AfterDisappear()
-	{
-	}
-
 	public void ActivateDropAnimation(bool needAppear, int dropIndex)
 	{
 		var rootSizeDelta = View.PaneRoot.sizeDelta;
 		var cellHeight = rootSizeDelta.y;
 		View.PanelFruitsRoot.anchoredPosition = new Vector2(0, dropIndex * cellHeight);
 
-		Debug.Log($"ActivateDropAnimation: needAppear: {needAppear}, dropIndex: {dropIndex}, cellHeight: {dropIndex * cellHeight}, IndexY: {IndexY}");
 		if (needAppear)
 		{
 			View.CanvasGroupFruitsRoot.alpha = 0f;
@@ -274,22 +260,14 @@ public class CellPresenter : UiPresenter
 				.AppendInterval(0.5f)
 				.Append(View.CanvasGroupFruitsRoot.DOFade(1f, 0.5f))
 				.AppendInterval((Utils.PlateSizeY - IndexY) * 0.5f)
-				.Append(View.PanelFruitsRoot.DOAnchorPos(new Vector2(0f, 0f), 0.5f))
-			.AppendCallback(AfterDropNewType);
+				.Append(View.PanelFruitsRoot.DOAnchorPos(new Vector2(0f, 0f), 0.5f));
+			return;
 		}
-		else
-		{
-			View.CanvasGroupFruitsRoot.alpha = 1f;
 
-			DOTween.Sequence()
-				.AppendInterval((Utils.PlateSizeY - IndexY) * 0.5f)
-				.Append(View.PanelFruitsRoot.DOAnchorPos(new Vector2(0f, 0f), 0.5f))
-				.AppendCallback(AfterDropNewType);
-		}
-	}
-
-	private void AfterDropNewType()
-	{
+		View.CanvasGroupFruitsRoot.alpha = 1f;
+		DOTween.Sequence()
+			.AppendInterval((Utils.PlateSizeY - IndexY) * 0.5f)
+			.Append(View.PanelFruitsRoot.DOAnchorPos(new Vector2(0f, 0f), 0.5f));
 	}
 
 	private bool HasPlayingMoveAnimation()
@@ -303,7 +281,7 @@ public class CellPresenter : UiPresenter
 				|| _upBadMoveAnimation.IsPlaying()
 				|| _downBadMoveAnimation.IsPlaying();
 	}
-	
+
 	#endregion
 
 	public override void Dispose()
