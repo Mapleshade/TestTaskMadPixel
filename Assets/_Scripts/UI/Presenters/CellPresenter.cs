@@ -15,7 +15,6 @@ public class CellPresenter : UiPresenter
 	private readonly Tween _rightBadMoveAnimation;
 	private readonly Tween _upBadMoveAnimation;
 	private readonly Tween _downBadMoveAnimation;
-	private readonly Tween _dropNewTypeWithFadeAnimation;
 	private ViewCellRoot View { get; }
 	public CellTypeEnum CellType { get; private set; }
 	public Transform ViewTransform => View.transform;
@@ -59,7 +58,7 @@ public class CellPresenter : UiPresenter
 		var cellHeight = rootSizeDelta.y;
 
 		_leftMoveAnimation = DOTween.Sequence()
-			.Append(View.PanelFruitsRoot.DOAnchorPos(new Vector2(-cellWidth, 0f), 0.5f))
+			.Append(View.PanelFruitsRoot.DOAnchorPos(new Vector2(-cellWidth, 0f), 0.5f).SetEase(Ease.Linear))
 			.AppendInterval(0.5f)
 			.AppendCallback(AfterMove)
 			.SetId(this)
@@ -67,7 +66,7 @@ public class CellPresenter : UiPresenter
 			.Pause();
 
 		_rightMoveAnimation = DOTween.Sequence()
-			.Append(View.PanelFruitsRoot.DOAnchorPos(new Vector2(cellWidth, 0f), 0.5f))
+			.Append(View.PanelFruitsRoot.DOAnchorPos(new Vector2(cellWidth, 0f), 0.5f).SetEase(Ease.Linear))
 			.AppendInterval(0.5f)
 			.AppendCallback(AfterMove)
 			.SetId(this)
@@ -75,7 +74,7 @@ public class CellPresenter : UiPresenter
 			.Pause();
 
 		_upMoveAnimation = DOTween.Sequence()
-			.Append(View.PanelFruitsRoot.DOAnchorPos(new Vector2(0f, cellHeight), 0.5f))
+			.Append(View.PanelFruitsRoot.DOAnchorPos(new Vector2(0f, cellHeight), 0.5f).SetEase(Ease.Linear))
 			.AppendInterval(0.5f)
 			.AppendCallback(AfterMove)
 			.SetId(this)
@@ -83,7 +82,7 @@ public class CellPresenter : UiPresenter
 			.Pause();
 
 		_downMoveAnimation = DOTween.Sequence()
-			.Append(View.PanelFruitsRoot.DOAnchorPos(new Vector2(0f, -cellHeight), 0.5f))
+			.Append(View.PanelFruitsRoot.DOAnchorPos(new Vector2(0f, -cellHeight), 0.5f).SetEase(Ease.Linear))
 			.AppendInterval(0.5f)
 			.AppendCallback(AfterMove)
 			.SetId(this)
@@ -95,52 +94,38 @@ public class CellPresenter : UiPresenter
 		#region bad move animations
 
 		_leftBadMoveAnimation = DOTween.Sequence()
-			.Append(View.PanelFruitsRoot.DOAnchorPos(new Vector2(-cellWidth, 0f), 0.5f))
-			.Append(View.PanelFruitsRoot.DOAnchorPos(new Vector2(0f, 0f), 0.5f))
+			.Append(View.PanelFruitsRoot.DOAnchorPos(new Vector2(-cellWidth, 0f), 0.5f).SetEase(Ease.Linear))
+			.Append(View.PanelFruitsRoot.DOAnchorPos(new Vector2(0f, 0f), 0.5f).SetEase(Ease.Linear))
 			.AppendCallback(AfterBadMove)
 			.SetId(this)
 			.SetAutoKill(false)
 			.Pause();
 
 		_rightBadMoveAnimation = DOTween.Sequence()
-			.Append(View.PanelFruitsRoot.DOAnchorPos(new Vector2(cellWidth, 0f), 0.5f))
-			.Append(View.PanelFruitsRoot.DOAnchorPos(new Vector2(0f, 0f), 0.5f))
+			.Append(View.PanelFruitsRoot.DOAnchorPos(new Vector2(cellWidth, 0f), 0.5f).SetEase(Ease.Linear))
+			.Append(View.PanelFruitsRoot.DOAnchorPos(new Vector2(0f, 0f), 0.5f).SetEase(Ease.Linear))
 			.AppendCallback(AfterMove)
 			.SetId(this)
 			.SetAutoKill(false)
 			.Pause();
 
 		_upBadMoveAnimation = DOTween.Sequence()
-			.Append(View.PanelFruitsRoot.DOAnchorPos(new Vector2(0f, cellHeight), 0.5f))
-			.Append(View.PanelFruitsRoot.DOAnchorPos(new Vector2(0f, 0f), 0.5f))
+			.Append(View.PanelFruitsRoot.DOAnchorPos(new Vector2(0f, cellHeight), 0.5f).SetEase(Ease.Linear))
+			.Append(View.PanelFruitsRoot.DOAnchorPos(new Vector2(0f, 0f), 0.5f).SetEase(Ease.Linear))
 			.AppendCallback(AfterMove)
 			.SetId(this)
 			.SetAutoKill(false)
 			.Pause();
 
 		_downBadMoveAnimation = DOTween.Sequence()
-			.Append(View.PanelFruitsRoot.DOAnchorPos(new Vector2(0f, -cellHeight), 0.5f))
-			.Append(View.PanelFruitsRoot.DOAnchorPos(new Vector2(0f, 0f), 0.5f))
+			.Append(View.PanelFruitsRoot.DOAnchorPos(new Vector2(0f, -cellHeight), 0.5f).SetEase(Ease.Linear))
+			.Append(View.PanelFruitsRoot.DOAnchorPos(new Vector2(0f, 0f), 0.5f).SetEase(Ease.Linear))
 			.AppendCallback(AfterMove)
 			.SetId(this)
 			.SetAutoKill(false)
 			.Pause();
 
 		#endregion
-
-		#region drop animations
-
-		_dropNewTypeWithFadeAnimation = DOTween.Sequence()
-			.Append(View.PanelFruitsRoot.DOAnchorPos(new Vector2(0f, cellHeight), 0f))
-			.Join(View.CanvasGroupFruitsRoot.DOFade(0, 0f))
-			.Append(View.PanelFruitsRoot.DOAnchorPos(new Vector2(0f, 0f), 0.5f))
-			.Join(View.CanvasGroupFruitsRoot.DOFade(1f, 0.5f))
-			.AppendCallback(AfterDropNewType)
-			.SetId(this)
-			.SetAutoKill(false)
-			.Pause();
-
-			#endregion
 	}
 
 	public void SetType(CellTypeEnum cellType, bool updateView)
@@ -257,16 +242,8 @@ public class CellPresenter : UiPresenter
 
 	private void AfterMove()
 	{
-		// _rightMoveAnimation.Rewind();
-		// _leftMoveAnimation.Rewind();
-		// _upMoveAnimation.Rewind();
-		// _downMoveAnimation.Rewind();
-
-		// if (!_disappearAnimation.IsPlaying())
-		{
-			Debug.Log($"AfterMove cell x: {IndexX}, cell y: {IndexY}, type: {CellType}");
-			UpdateView();
-		}
+		Debug.Log($"AfterMove cell x: {IndexX}, cell y: {IndexY}, type: {CellType}");
+		UpdateView();
 	}
 
 	private void AfterBadMove()
@@ -281,32 +258,32 @@ public class CellPresenter : UiPresenter
 
 	private void AfterDisappear()
 	{
-		// _disappearAnimation.Rewind();
-
-		// UpdateView();
 	}
 
-	private void ActivateDropAnimation()
+	public void ActivateDropAnimation(bool needAppear, int dropIndex)
 	{
-		if (IndexY == 0)
+		var rootSizeDelta = View.PaneRoot.sizeDelta;
+		var cellHeight = rootSizeDelta.y;
+		View.PanelFruitsRoot.anchoredPosition = new Vector2(0, dropIndex * cellHeight);
+
+		if (needAppear)
 		{
-			_dropNewTypeWithFadeAnimation.Restart();
+			View.CanvasGroupFruitsRoot.alpha = 0f;
+			DOTween.Sequence()
+				.AppendInterval(0.5f)
+				.Append(View.CanvasGroupFruitsRoot.DOFade(1f, 0.5f))
+				.AppendInterval((Utils.PlateSizeY - IndexY) * 0.5f)
+				.Append(View.PanelFruitsRoot.DOAnchorPos(new Vector2(0f, 0f), 0.5f))
+			.AppendCallback(AfterDropNewType);
 		}
 		else
 		{
-			// _dropNewTypeAnimation.Restart();
-			
-			
-			var rootSizeDelta = View.PaneRoot.sizeDelta;
-			var cellHeight = rootSizeDelta.y;
-	
-			// DOTween.Sequence()
-			// 	// .AppendInterval(1f)
-			// 	.Append(View.PanelFruitsRoot.DOAnchorPos(new Vector2(0f, _cachedDestroyedCellsCount * cellHeight), 0f))
-			// 	.Join(View.CanvasGroupFruitsRoot.DOFade(0, 0f))
-			// 	.Append(View.PanelFruitsRoot.DOAnchorPos(new Vector2(0f, 0f), 0.5f))
-			// 	.Join(View.CanvasGroupFruitsRoot.DOFade(1f, 0.5f))
-			// 	.AppendCallback(AfterDropNewType);
+			View.CanvasGroupFruitsRoot.alpha = 1f;
+
+			DOTween.Sequence()
+				.AppendInterval((Utils.PlateSizeY - IndexY) * 0.5f)
+				.Append(View.PanelFruitsRoot.DOAnchorPos(new Vector2(0f, 0f), 0.5f))
+				.AppendCallback(AfterDropNewType);
 		}
 	}
 

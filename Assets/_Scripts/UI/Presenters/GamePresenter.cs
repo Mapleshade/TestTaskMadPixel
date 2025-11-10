@@ -721,51 +721,52 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 		foreach (var cellsList in _affectedColumns.Values)
 			cellsList.Clear();
 	
-		// foreach (var cellPresenter in _generalCellsBuffer)
-		// {
-		// 	if (!_affectedColumns[cellPresenter.IndexX].Contains(cellPresenter))
-		// 		_affectedColumns[cellPresenter.IndexX].Add(cellPresenter);
-		// }
-		//
-		// foreach (var affectedColumn in _affectedColumns)
-		// {
-		// 	foreach (var cellPresenter in affectedColumn.Value)
-		// 	{
-		// 		Debug.Log($"DropCells column: {affectedColumn.Key}, count: {affectedColumn.Value.Count}, cell x: {cellPresenter.IndexX}, cell y: {cellPresenter.IndexY}");
-		// 	}
-		// }
+		foreach (var cellPresenter in _matchesBuffer)
+		{
+			if (!_affectedColumns[cellPresenter.IndexX].Contains(cellPresenter))
+				_affectedColumns[cellPresenter.IndexX].Add(cellPresenter);
+		}
+		
+		foreach (var affectedColumn in _affectedColumns)
+		{
+			foreach (var cellPresenter in affectedColumn.Value)
+			{
+				Debug.Log($"DropCells column: {affectedColumn.Key}, count: {affectedColumn.Value.Count}, cell x: {cellPresenter.IndexX}, cell y: {cellPresenter.IndexY}");
+			}
+		}
 	
-		// for (var i = 0; i < _affectedColumns.Count; i++)
-		// {
-		// 	var affectedCells = _affectedColumns[i];
-		// 	if (affectedCells.Count == 0)
-		// 			continue;
-		//
-		// 	var allCellsInColumn = _columnsPresenters[i];
-		// 	var affectedCellsCount = affectedCells.Count;
-		// 	var maxAffectedIndex = 0;
-		//
-		// 	foreach (var cell in affectedCells)
-		// 	{
-		// 		if (maxAffectedIndex < cell.IndexY)
-		// 			maxAffectedIndex = cell.IndexY;
-		// 	}
-		//
-		// 	Debug.Log($"DropCells column: {i}, maxAffectedIndex: {maxAffectedIndex}");
-		//
-		// 	for (var j = 0; j <= maxAffectedIndex; j++)
-		// 	{
-		// 		if (j - affectedCellsCount < 0)
-		// 		{
-		// 			var randomCellTypeIndex = Random.Range(0, _cellTypesCount);
-		// 			var randomCellType = (CellTypeEnum) randomCellTypeIndex;
-		// 			allCellsInColumn[j].SetCachedNewType(randomCellType, true, j + 1);
-		// 			continue;
-		// 		}
-		// 		
-		// 		allCellsInColumn[j].SetCachedNewType(allCellsInColumn[j - affectedCellsCount].CellType, false, j - affectedCellsCount + 1);
-		// 	}
-		// }
+		for (var i = 0; i < _affectedColumns.Count; i++)
+		{
+			var affectedCells = _affectedColumns[i];
+			if (affectedCells.Count == 0)
+					continue;
+		
+			var allCellsInColumn = _columnsPresenters[i];
+			var affectedCellsCount = affectedCells.Count;
+			var maxAffectedIndex = 0;
+		
+			foreach (var cell in affectedCells)
+			{
+				if (maxAffectedIndex < cell.IndexY)
+					maxAffectedIndex = cell.IndexY;
+			}
+		
+			Debug.Log($"DropCells column: {i}, maxAffectedIndex: {maxAffectedIndex}");
+		
+			for (var j = 0; j <= maxAffectedIndex; j++)
+			{
+				if (j - affectedCellsCount < 0)
+				{
+					var randomCellTypeIndex = Random.Range(0, _cellTypesCount);
+					var randomCellType = (CellTypeEnum) randomCellTypeIndex;
+					allCellsInColumn[j].SetType(randomCellType, true);
+					allCellsInColumn[j].ActivateDropAnimation(true, j + 1);
+					continue;
+				}
+				
+				allCellsInColumn[j].ActivateDropAnimation(false, j - affectedCellsCount + 1);
+			}
+		}
 	}
 	
 	
