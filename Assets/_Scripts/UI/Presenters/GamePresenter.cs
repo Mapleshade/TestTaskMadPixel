@@ -23,7 +23,8 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 
 	private readonly int _cellTypesCount;
 	private readonly Tween _timerForBlockPlate;
-	private readonly Tween _timerWaitingAnimations;
+	private readonly Tween _timerWaitingMoveAnimations;
+	private readonly Tween _timerWaitingDisappearAnimations;
 	private CellPresenter _selectedPresenter;
 	private bool _isPlateAvailable = true;
 
@@ -52,8 +53,14 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 			.SetId(this)
 			.Pause();
 
-		_timerWaitingAnimations = DOVirtual
-			.DelayedCall(1f, OnEndTimerWaitingDisappearAnimations)
+		_timerWaitingMoveAnimations = DOVirtual
+			.DelayedCall(3f, OnEndTimerWaitingMoveAnimations)
+			.SetAutoKill(false)
+			.SetId(this)
+			.Pause();
+
+		_timerWaitingDisappearAnimations = DOVirtual
+			.DelayedCall(3f, OnEndTimerWaitingDisappearAnimations)
 			.SetAutoKill(false)
 			.SetId(this)
 			.Pause();
@@ -63,6 +70,15 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 	{
 		_isPlateAvailable = true;
 		ResetPlayerInput();
+	}
+
+	private void OnEndTimerWaitingMoveAnimations()
+	{
+		foreach (var cellPresenter in _matchesBuffer)
+		{
+			cellPresenter.ActivateDisappearAnimation();
+		}
+		_timerWaitingDisappearAnimations.Restart();
 	}
 
 	private void OnEndTimerWaitingDisappearAnimations()
@@ -625,12 +641,8 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 		Debug.Log($"_matchesBuffer.count: {_matchesBuffer.Count} {debugStr}");
 		// DestroyCells(_selectedPresenter, presenter);
 
-		foreach (var cellPresenter in _matchesBuffer)
-		{
-			cellPresenter.ActivateDisappearAnimation();
-		}
 		
-		_timerWaitingAnimations.Restart();
+		_timerWaitingMoveAnimations.Restart();
 	}
 
 	private void OnSignalResetPlayerInputData(SignalResetPlayerInputData signalData)

@@ -289,18 +289,6 @@ public class CellPresenter : UiPresenter
 
 	private void AfterDropNewType()
 	{
-		// _dropNewTypeAnimation.Rewind();
-		// _dropNewTypeWithFadeAnimation.Rewind();
-		//
-		// _disappearAnimation.Rewind();
-		// 	
-		// _rightMoveAnimation.Rewind();
-		// _leftMoveAnimation.Rewind();
-		// _upMoveAnimation.Rewind();
-		// _downMoveAnimation.Rewind();
-		//
-		// View.PanelFruitsRoot.anchoredPosition = Vector2.zero;
-		// View.CanvasGroupFruitsRoot.alpha = 1f;
 	}
 
 	private bool HasPlayingMoveAnimation()
