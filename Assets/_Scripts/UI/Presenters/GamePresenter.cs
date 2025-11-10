@@ -25,6 +25,7 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 	private readonly Tween _timerForBlockPlate;
 	private readonly Tween _timerWaitingMoveAnimations;
 	private readonly Tween _timerWaitingDisappearAnimations;
+	private readonly Tween _timerWaitingDropAnimations;
 	private CellPresenter _selectedPresenter;
 	private bool _isPlateAvailable = true;
 
@@ -48,7 +49,7 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 		_gameBoard = new CellPresenter[Utils.PlateSizeX, Utils.PlateSizeY];
 
 		_timerForBlockPlate = DOVirtual
-			.DelayedCall(1.5f, OnEndTimerForBlockPlate)
+			.DelayedCall(10f, OnEndTimerForBlockPlate)
 			.SetAutoKill(false)
 			.SetId(this)
 			.Pause();
@@ -64,6 +65,12 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 			.SetAutoKill(false)
 			.SetId(this)
 			.Pause();
+
+		_timerWaitingDropAnimations = DOVirtual
+			.DelayedCall(1.1f, OnEndTimerWaitingDropAnimations)
+			.SetAutoKill(false)
+			.SetId(this)
+			.Pause();
 	}
 
 	private void OnEndTimerForBlockPlate()
@@ -74,16 +81,38 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 
 	private void OnEndTimerWaitingMoveAnimations()
 	{
+		StartDisappearAnimations();
+	}
+
+	private void StartDisappearAnimations()
+	{
 		foreach (var cellPresenter in _matchesBuffer)
-		{
 			cellPresenter.ActivateDisappearAnimation();
-		}
+
 		_timerWaitingDisappearAnimations.Restart();
 	}
 
 	private void OnEndTimerWaitingDisappearAnimations()
 	{
 		DropCells();
+		_timerWaitingDropAnimations.Restart();
+	}
+
+	private void OnEndTimerWaitingDropAnimations()
+	{
+		CheckForMatches();
+		if (_matchesBuffer.Count <= 0)
+		{
+			_isPlateAvailable = true;
+			ResetPlayerInput();
+			var canContinueGame = CanContinueGame();
+			if (!canContinueGame)
+				Debug.Log($"Game over!");
+		}
+		else
+		{
+			StartDisappearAnimations();
+		}
 	}
 
 	public override void Initialize()
@@ -102,8 +131,10 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 			.Subscribe(OnSignalResetPlayerInputData)
 			.AddTo(_disposables);
 
-		View.PanelBackgrounds.GetComponent<RectTransform>().sizeDelta = new Vector2(100 * Utils.PlateSizeX, 100 * Utils.PlateSizeY);
-		View.PanelPlate.GetComponent<RectTransform>().sizeDelta = new Vector2(100 * Utils.PlateSizeX, 100 * Utils.PlateSizeY);
+		View.PanelBackgrounds.GetComponent<RectTransform>().sizeDelta =
+			new Vector2(100 * Utils.PlateSizeX, 100 * Utils.PlateSizeY);
+		View.PanelPlate.GetComponent<RectTransform>().sizeDelta =
+			new Vector2(100 * Utils.PlateSizeX, 100 * Utils.PlateSizeY);
 
 		GenerateGamePlate();
 		CheckStartPlate();
@@ -537,7 +568,8 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 			_selectedPresenter.ActivateBadWayAnimation();
 		}
 		else if (CheckRightCellsAvailableToMerge(_selectedPresenter.IndexX, _rowsPresenters[_selectedPresenter.IndexY])
-				|| _selectedPresenter.IndexX + 1 < _columnsPresenters.Count && CheckCellsFromParallelLineAvailableToMerge
+				|| _selectedPresenter.IndexX + 1 < _columnsPresenters.Count &&
+				CheckCellsFromParallelLineAvailableToMerge
 				(_selectedPresenter.IndexY, _columnsPresenters[_selectedPresenter.IndexX],
 					_columnsPresenters[_selectedPresenter.IndexX + 1]))
 		{
@@ -609,7 +641,8 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 		{
 			_selectedPresenter.ActivateBadWayAnimation();
 		}
-		else if (CheckRightCellsAvailableToMerge(_selectedPresenter.IndexY, _columnsPresenters[_selectedPresenter.IndexX])
+		else if (CheckRightCellsAvailableToMerge(_selectedPresenter.IndexY,
+					_columnsPresenters[_selectedPresenter.IndexX])
 				|| _selectedPresenter.IndexY + 1 < _rowsPresenters.Count && CheckCellsFromParallelLineAvailableToMerge
 				(_selectedPresenter.IndexX, _rowsPresenters[_selectedPresenter.IndexY],
 					_rowsPresenters[_selectedPresenter.IndexY + 1]))
@@ -638,10 +671,11 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 		{
 			debugStr += $"cell: {cellPresenter.IndexX}, {cellPresenter.IndexY}; ";
 		}
+
 		Debug.Log($"_matchesBuffer.count: {_matchesBuffer.Count} {debugStr}");
 		// DestroyCells(_selectedPresenter, presenter);
 
-		
+
 		_timerWaitingMoveAnimations.Restart();
 	}
 
@@ -667,7 +701,7 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 			var rowList = _rowsPresenters[y];
 			for (var x = 0; x < rowList.Count; x++)
 			{
-				CheckLine( x, 0, 0, 1);
+				CheckLine(x, 0, 0, 1);
 			}
 		}
 
@@ -677,11 +711,55 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 			var columnList = _columnsPresenters[x];
 			for (var y = 0; y < columnList.Count; y++)
 			{
-				CheckLine( 0, y, 1, 0);
+				CheckLine(0, y, 1, 0);
 			}
 		}
 	}
+	
+	private bool CanContinueGame()
+	{
+		int rows = _gameBoard.GetLength(0);
+		int cols = _gameBoard.GetLength(1);
 
+		// Проверяем каждую клетку на возможность перемещения
+		for (int i = 0; i < rows; i++)
+		{
+			for (int j = 0; j < cols; j++)
+			{
+				// Проверяем возможные перемещения: вправо и вниз
+				if (IsMovePossible(i, j, i, j + 1) || IsMovePossible( i, j, i + 1, j))
+				{
+					return true; // Если хотя бы одно перемещение возможно, возвращаем true
+				}
+			}
+		}
+
+		return false; // Если не найдено ни одного возможного перемещения
+	}
+
+	private bool IsMovePossible(int x1, int y1, int x2, int y2)
+	{
+		// Проверяем границы доски
+		if (x2 >= _gameBoard.GetLength(0) || y2 >= _gameBoard.GetLength(1))
+			return false;
+
+		// Меняем местами элементы
+		var temp = _gameBoard[x1, y1];
+		_gameBoard[x1, y1] = _gameBoard[x2, y2];
+		_gameBoard[x2, y2] = temp;
+
+		// Проверяем на наличие последовательностей
+		CheckForMatches();
+	
+		bool hasMatches = _matchesBuffer.Count > 0;
+
+		// Возвращаем обратно элементы на место
+		_gameBoard[x2, y2] = _gameBoard[x1, y1];
+		_gameBoard[x1, y1] = temp;
+
+		return hasMatches;
+	}
+	
 	private void CheckLine(int startX, int startY, int deltaX, int deltaY)
 	{
 		_matchPositionsBuffer.Clear();
@@ -709,7 +787,7 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 					// Добавляем все позиции текущей последовательности
 					AddRangeExceptDuplicates(_matchesBuffer, _matchPositionsBuffer);
 				}
-				
+
 				currentCellType = _gameBoard[x, y].CellType;
 				count = 1;
 				_matchPositionsBuffer.Clear(); // очищаем список для новой последовательности
@@ -735,39 +813,40 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 	{
 		foreach (var cellsList in _affectedColumns.Values)
 			cellsList.Clear();
-	
+
 		foreach (var cellPresenter in _matchesBuffer)
 		{
 			if (!_affectedColumns[cellPresenter.IndexX].Contains(cellPresenter))
 				_affectedColumns[cellPresenter.IndexX].Add(cellPresenter);
 		}
-		
+
 		foreach (var affectedColumn in _affectedColumns)
 		{
 			foreach (var cellPresenter in affectedColumn.Value)
 			{
-				Debug.Log($"DropCells column: {affectedColumn.Key}, count: {affectedColumn.Value.Count}, cell x: {cellPresenter.IndexX}, cell y: {cellPresenter.IndexY}");
+				Debug.Log(
+					$"DropCells column: {affectedColumn.Key}, count: {affectedColumn.Value.Count}, cell x: {cellPresenter.IndexX}, cell y: {cellPresenter.IndexY}");
 			}
 		}
-	
+
 		for (var i = 0; i < _affectedColumns.Count; i++)
 		{
 			var affectedCells = _affectedColumns[i];
 			if (affectedCells.Count == 0)
-					continue;
-		
+				continue;
+
 			var allCellsInColumn = _columnsPresenters[i];
 			var affectedCellsCount = affectedCells.Count;
 			var maxAffectedIndex = 0;
-		
+
 			foreach (var cell in affectedCells)
 			{
 				if (maxAffectedIndex < cell.IndexY)
 					maxAffectedIndex = cell.IndexY;
 			}
-		
+
 			Debug.Log($"DropCells column: {i}, maxAffectedIndex: {maxAffectedIndex}");
-		
+
 			for (var j = maxAffectedIndex; j >= 0; j--)
 			{
 				if (j - affectedCellsCount < 0)
@@ -778,14 +857,14 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 					allCellsInColumn[j].ActivateDropAnimation(true, j + 1);
 					continue;
 				}
-				
+
 				allCellsInColumn[j].SetType(allCellsInColumn[j - affectedCellsCount].CellType, true);
 				allCellsInColumn[j].ActivateDropAnimation(false, affectedCellsCount);
 			}
 		}
 	}
-	
-	
+
+
 	public override void Dispose()
 	{
 		base.Dispose();
