@@ -266,6 +266,7 @@ public class CellPresenter : UiPresenter
 		var cellHeight = rootSizeDelta.y;
 		View.PanelFruitsRoot.anchoredPosition = new Vector2(0, dropIndex * cellHeight);
 
+		Debug.Log($"ActivateDropAnimation: needAppear: {needAppear}, dropIndex: {dropIndex}, cellHeight: {dropIndex * cellHeight}, IndexY: {IndexY}");
 		if (needAppear)
 		{
 			View.CanvasGroupFruitsRoot.alpha = 0f;

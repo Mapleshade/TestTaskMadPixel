@@ -54,13 +54,13 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 			.Pause();
 
 		_timerWaitingMoveAnimations = DOVirtual
-			.DelayedCall(3f, OnEndTimerWaitingMoveAnimations)
+			.DelayedCall(1.1f, OnEndTimerWaitingMoveAnimations)
 			.SetAutoKill(false)
 			.SetId(this)
 			.Pause();
 
 		_timerWaitingDisappearAnimations = DOVirtual
-			.DelayedCall(3f, OnEndTimerWaitingDisappearAnimations)
+			.DelayedCall(1.1f, OnEndTimerWaitingDisappearAnimations)
 			.SetAutoKill(false)
 			.SetId(this)
 			.Pause();
@@ -780,7 +780,7 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 				}
 				
 				allCellsInColumn[j].SetType(allCellsInColumn[j - affectedCellsCount].CellType, true);
-				allCellsInColumn[j].ActivateDropAnimation(false, j - affectedCellsCount + 1);
+				allCellsInColumn[j].ActivateDropAnimation(false, affectedCellsCount);
 			}
 		}
 	}
