@@ -86,6 +86,9 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 			.Subscribe(OnSignalResetPlayerInputData)
 			.AddTo(_disposables);
 
+		View.PanelBackgrounds.GetComponent<RectTransform>().sizeDelta = new Vector2(100 * Utils.PlateSizeX, 100 * Utils.PlateSizeY);
+		View.PanelPlate.GetComponent<RectTransform>().sizeDelta = new Vector2(100 * Utils.PlateSizeX, 100 * Utils.PlateSizeY);
+
 		GenerateGamePlate();
 		CheckStartPlate();
 	}
@@ -753,7 +756,7 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 		
 			Debug.Log($"DropCells column: {i}, maxAffectedIndex: {maxAffectedIndex}");
 		
-			for (var j = 0; j <= maxAffectedIndex; j++)
+			for (var j = maxAffectedIndex; j >= 0; j--)
 			{
 				if (j - affectedCellsCount < 0)
 				{
@@ -764,6 +767,7 @@ public class GamePresenter : BaseUIPresenter<ViewGame>
 					continue;
 				}
 				
+				allCellsInColumn[j].SetType(allCellsInColumn[j - affectedCellsCount].CellType, true);
 				allCellsInColumn[j].ActivateDropAnimation(false, j - affectedCellsCount + 1);
 			}
 		}

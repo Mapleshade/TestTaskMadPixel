@@ -4,8 +4,8 @@ using UnityEngine;
 
 public static class Utils
 {
-	public const int PlateSizeX = 8;
-	public const int PlateSizeY = 8;
+	public const int PlateSizeX = 5;
+	public const int PlateSizeY = 5;
 	private const float ScreenMovingMaxDeltaPersent = .15f;
 	private static float ScreenMovingMaxDelta { get; } = Screen.height * ScreenMovingMaxDeltaPersent;
 
